@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Dict, List
 
 from llmpipe.evaluations.core import Evaluation, EvalResult
 
@@ -18,8 +18,7 @@ class NoBlockedTerms(Evaluation):
         elif not self.requirement and not self.blocked_terms and self.blocked_terms_field:
             self.requirement = "Does not contain any of the following terms: {{" + self.blocked_terms_field + "}}"
 
-    def __call__(self, **inputs) -> Dict:
-        slash_pattern = r'\b\w+/\w+\b'
+    def __call__(self, **inputs) -> EvalResult:
         text = inputs[self.field]
         words = text.lower().split()
         matches = []
