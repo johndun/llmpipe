@@ -21,6 +21,9 @@ class LlmPrompt(LlmChat):
     footer: str = None  #: An optional prompt footer (text for the very end of the prompt)
 
     def __post_init__(self):
+        # Need inputs and outputs to be non empty. They are defined with defaults because of dataclass inheritence issues
+        assert self.inputs is not None
+        assert self.outputs is not None
         super().__post_init__()
         if self.footer is None:
             if len(self.outputs) > 2:
