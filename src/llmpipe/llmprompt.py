@@ -26,13 +26,17 @@ class LlmPrompt(LlmChat):
         assert self.outputs is not None
         super().__post_init__()
         if self.footer is None:
-            if len(self.outputs) > 2:
+            if len(self.outputs) == 0:
+                self.footer = ""
+            elif len(self.outputs) > 2:
                 inline = ", ".join([f"{x.xml}...{x.xml_close}" for x in self.outputs])
+                self.footer = f"Generate the required outputs within XML tags: {inline}"
             elif len(self.outputs) == 2:
                 inline = " and ".join([f"{x.xml}...{x.xml_close}" for x in self.outputs])
+                self.footer = f"Generate the required outputs within XML tags: {inline}"
             else:
                 inline = self.outputs[0].xml
-            self.footer = f"Generate the required output{'s' if len(self.outputs) > 1 else ''} within XML tags: {inline}"
+                self.footer = f"Generate the required output within XML tags: {inline}"
 
     @property
     def prompt(self) -> str:
