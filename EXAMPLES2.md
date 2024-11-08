@@ -1,5 +1,33 @@
 # LLMPipe Examples
 
+## LlmPrompt Class Overview
+
+The `LlmPrompt` class is the core component for creating structured LLM interactions. It inherits from `LlmChat` and provides a framework for defining inputs, outputs, and evaluations.
+
+### Key Parameters
+
+- `inputs`: List[Input] - Define the input fields expected by the prompt
+- `outputs`: List[Output] - Define the output fields to be generated
+- `task`: str - The main task description
+- `details`: str - Additional task details or instructions
+- `inputs_header`: str - Header text for the inputs section (default: "You are provided the following inputs:")
+- `footer`: str - Optional footer text for the prompt
+- `break_after_first_fail`: bool - Stop evaluation after first failure (default: True)
+
+### Main Methods
+
+- `__call__(**inputs)` - Generate outputs for given inputs
+- `evaluate(**inputs)` - Run evaluations on outputs
+- `revise(max_revisions=6, **inputs)` - Attempt to fix failing evaluations
+
+### Automatic Features
+
+- Generates structured prompts from inputs/outputs definitions
+- Handles XML tag wrapping for outputs
+- Manages conversation history
+- Tracks token usage
+- Validates outputs against requirements
+
 This document provides comprehensive examples of using the LLMPipe library for various use cases.
 
 ## Basic Usage
