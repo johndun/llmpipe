@@ -1,4 +1,4 @@
-from llmpipe.evaluations.is_in import IsInAllowList
+from llmpipe.evaluations.is_in_allow_list import IsInAllowList
 
 
 def test_is_in_allow_list_pass():
