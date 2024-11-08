@@ -20,7 +20,8 @@ dev = [
     "pytest-cov>=2.0",
     "pdoc3>=0.11",
     "jupyter>=1.1.1",
-    "aider>=0.2.6"
+    "aider-chat>=0.62.1",
+    "boto3>=1.35"
 ]
 
 [build-system]
