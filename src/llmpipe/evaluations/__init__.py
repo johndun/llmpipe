@@ -1,20 +1,14 @@
-from typing import Union
+from typing import List, Union
 
 from .core import Evaluation
-from .max_chars import MaxCharacters
-from .no_blocked_terms import NoBlockedTerms
-from .no_long_words import NoLongWords
-from .no_slashes import NoSlashes
-from .no_square_brackets import NoSquareBrackets
-from .not_in_blocked_list import NotInBlockedList
-from .is_in_allow_list import IsInAllowList
 
 
-def deterministic_eval_factory(
+def eval_factory(
         type: str,
         field: str,
-        value: Union[int, float, str] = None,
-        label: str = None
+        value: Union[int, float, str, List] = None,
+        label: str = None,
+        **kwargs
 ) -> Evaluation:
     """Returns an evaluation
 
@@ -28,6 +22,15 @@ def deterministic_eval_factory(
         Evaluation: An initalized evaluation
 
     """
+    from llmpipe.evaluations.max_chars import MaxCharacters
+    from llmpipe.evaluations.no_blocked_terms import NoBlockedTerms
+    from llmpipe.evaluations.no_long_words import NoLongWords
+    from llmpipe.evaluations.no_slashes import NoSlashes
+    from llmpipe.evaluations.no_square_brackets import NoSquareBrackets
+    from llmpipe.evaluations.not_in_blocked_list import NotInBlockedList
+    from llmpipe.evaluations.is_in_allow_list import IsInAllowList
+    from llmpipe.evaluations.llm_eval import LlmEvaluation
+
     if type == "max_chars":
         return MaxCharacters(field=field, max_chars=value, requirement=label)
 
@@ -57,5 +60,8 @@ def deterministic_eval_factory(
 
     if type == "is_in_field":
         return IsInAllowList(field=field, allowed_terms_field=value, requirement=label)
+
+    if type == "llm":
+        return LlmEvaluation(field=field, requirement=value, **kwargs)
 
     raise NotImplementedError

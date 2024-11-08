@@ -1,5 +1,5 @@
 from llmpipe.field import Input, Output
-from llmpipe.evaluations import MaxCharacters
+from llmpipe.evaluations.max_chars import MaxCharacters
 
 
 def test_field_basic():
