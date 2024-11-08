@@ -5,6 +5,7 @@ Sub-modules
 -----------
 * llmpipe.evaluations.core
 * llmpipe.evaluations.is_in_allow_list
+* llmpipe.evaluations.llm_eval
 * llmpipe.evaluations.max_chars
 * llmpipe.evaluations.no_blocked_terms
 * llmpipe.evaluations.no_long_words

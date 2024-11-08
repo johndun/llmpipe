@@ -1,6 +1,6 @@
 import pytest
 from llmpipe.llmprompt import LlmPrompt
-from llmpipe.field import Field
+from llmpipe.field import Input, Output
 
 
 def test_llmprompt_init():
@@ -15,8 +15,8 @@ def test_llmprompt_init():
 
 def test_llmprompt_with_fields():
     """Test LlmPrompt with input and output fields"""
-    input_field = Field(name="color", description="A color name")
-    output_field = Field(name="mood", description="The mood this color evokes")
+    input_field = Input(name="color", description="A color name")
+    output_field = Output(name="mood", description="The mood this color evokes")
     
     prompt = LlmPrompt(
         inputs=[input_field],
@@ -31,8 +31,8 @@ def test_llmprompt_with_fields():
 
 def test_prompt_template():
     """Test prompt template generation"""
-    input_field = Field(name="number", description="A number to analyze")
-    output_field = Field(name="analysis", description="Analysis of the number")
+    input_field = Input(name="number", description="A number to analyze")
+    output_field = Output(name="analysis", description="Analysis of the number")
     
     prompt = LlmPrompt(
         inputs=[input_field],
@@ -49,7 +49,7 @@ def test_prompt_template():
 
 def test_verify_outputs():
     """Test output verification"""
-    output_field = Field(name="result", description="The result")
+    output_field = Input(name="result", description="The result")
     prompt = LlmPrompt(outputs=[output_field])
     
     # Should pass
@@ -66,7 +66,7 @@ def test_llmprompt_call():
         def _call(self, prompt="", prefill="", tool_call_depth=0):
             return "<result>42</result>"
 
-    output_field = Field(name="result", description="The result")
+    output_field = Output(name="result", description="The result")
     prompt = MockLlmPrompt(outputs=[output_field])
     
     result = prompt()

@@ -5,22 +5,10 @@ from llmpipe.evaluations import deterministic_eval_factory, Evaluation
 
 
 @dataclass
-class Field:
+class Input:
     """Defines an LLM module input or output"""
     name: str  #: A name for the field
     description: str  #: Description for the field
-    evaluations: List[Evaluation] = field(default_factory=lambda: [])  #: Field evaluations
-    inputs: List['Field'] = field(default_factory=lambda: [])  #: Inputs needed to generate this field
-
-    def __post_init__(self):
-        if self.inputs:
-            self.inputs = [Field(**x) for x in self.inputs]
-
-        if self.evaluations:
-            self.evaluations = [
-                deterministic_eval_factory(field=self.name, **x)
-                for x in self.evaluations
-            ]
 
     @property
     def markdown(self) -> str:
@@ -46,3 +34,20 @@ class Field:
     def input_template(self) -> str:
         """Returns an input template using xml tags and double curly braces"""
         return self.xml + "\n{{" + self.name + "}}\n" + self.xml_close
+
+
+@dataclass
+class Output(Input):
+    """Defines an LLM module input or output with evaluations and linked inputs"""
+    evaluations: List[Evaluation] = field(default_factory=lambda: [])  #: Field evaluations
+    inputs: List[Input] = field(default_factory=lambda: [])  #: Inputs needed to generate this field
+
+    def __post_init__(self):
+        if self.inputs and not isinstance(self.inputs[0], Input):
+            self.inputs = [Input(**x) for x in self.inputs]
+
+        if self.evaluations and not isinstance(self.evaluations[0], Evaluation):
+            self.evaluations = [
+                deterministic_eval_factory(field=self.name, **x)
+                for x in self.evaluations
+            ]

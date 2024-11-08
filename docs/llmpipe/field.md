@@ -4,19 +4,17 @@ Module llmpipe.field
 Classes
 -------
 
-`Field(name: str, description: str, evaluations: List[llmpipe.evaluations.core.Evaluation] = <factory>, inputs: List[ForwardRef('Field')] = <factory>)`
+`Input(name: str, description: str)`
 :   Defines an LLM module input or output
+
+    ### Descendants
+
+    * llmpipe.field.Output
 
     ### Class variables
 
     `description: str`
     :   Description for the field
-
-    `evaluations: List[llmpipe.evaluations.core.Evaluation]`
-    :   Field evaluations
-
-    `inputs: List[llmpipe.field.Field]`
-    :   Inputs needed to generate this field
 
     `name: str`
     :   A name for the field
@@ -37,3 +35,18 @@ Classes
 
     `xml_close: str`
     :   Apply xml formatting to the input name
+
+`Output(name: str, description: str, evaluations: List[llmpipe.evaluations.core.Evaluation] = <factory>, inputs: List[llmpipe.field.Input] = <factory>)`
+:   Defines an LLM module input or output with evaluations and linked inputs
+
+    ### Ancestors (in MRO)
+
+    * llmpipe.field.Input
+
+    ### Class variables
+
+    `evaluations: List[llmpipe.evaluations.core.Evaluation]`
+    :   Field evaluations
+
+    `inputs: List[llmpipe.field.Input]`
+    :   Inputs needed to generate this field

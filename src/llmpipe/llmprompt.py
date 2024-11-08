@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Dict
 
-from llmpipe.field import Field
+from llmpipe.field import Input, Output
 from llmpipe.llmchat import LlmChat
 from llmpipe.template import Template
 from llmpipe.xml import parse_text_for_one_tag
@@ -13,8 +13,8 @@ class LlmPrompt(LlmChat):
 
     Constructions a prompt template using the input and output fields.
     """
-    inputs: List[Field] = field(default_factory=lambda: [])  #: Prompt input Fields
-    outputs: List[Field] = field(default_factory=lambda: [])  #: Prompt output Fields
+    inputs: List[Input] = field(default_factory=lambda: [])  #: Prompt inputs
+    outputs: List[Output] = field(default_factory=lambda: [])  #: Prompt outputs
     inputs_header: str = "You are provided the following inputs:"  #: The inputs definition section header
     task: str = ""  #: The task description at the top of the prompt
     details: str = ""  #: Task details that come after the input output definition sections
