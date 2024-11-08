@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import List
 
 from llmpipe.evaluations.core import Evaluation, EvalResult
 
