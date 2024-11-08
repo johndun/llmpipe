@@ -2,7 +2,7 @@
 
 ## LlmPrompt Class Overview
 
-The `LlmPrompt` class is the core component for creating structured LLM interactions. It inherits from `LlmChat` and provides a framework for defining inputs, outputs, and evaluations.
+The `LlmPrompt` class is the core component for creating structured LLM interactions. It provides a framework for defining inputs, outputs, and evaluations.
 
 ### Key Parameters
 
@@ -24,11 +24,9 @@ The `LlmPrompt` class is the core component for creating structured LLM interact
 
 - Generates structured prompts from inputs/outputs definitions
 - Handles XML tag wrapping for outputs
-- Manages conversation history
-- Tracks token usage
 - Validates outputs against requirements
 
-This document provides comprehensive examples of using the LLMPipe library for various use cases.
+This document provides examples of using the LLMPipe library for different use cases.
 
 ## Basic Usage
 

@@ -40,7 +40,7 @@ class LlmPrompt(LlmChat):
                 inline = " and ".join([f"{x.xml}...{x.xml_close}" for x in self.outputs])
                 self.footer = f"Generate the required outputs within XML tags: {inline}"
             else:
-                inline = self.outputs[0].xml
+                inline = f"{self.outputs[0].xml}...{self.outputs[0].xml_close}"
                 self.footer = f"Generate the required output within XML tags: {inline}"
 
     @property
