@@ -26,7 +26,13 @@ Classes
 
     ### Descendants
 
+    * llmpipe.evaluations.is_in_allow_list.IsInAllowList
     * llmpipe.evaluations.max_chars.MaxCharacters
+    * llmpipe.evaluations.no_blocked_terms.NoBlockedTerms
+    * llmpipe.evaluations.no_long_words.NoLongWords
+    * llmpipe.evaluations.no_slashes.NoSlashes
+    * llmpipe.evaluations.no_square_brackets.NoSquareBrackets
+    * llmpipe.evaluations.not_in_blocked_list.NotInBlockedList
 
     ### Class variables
 
