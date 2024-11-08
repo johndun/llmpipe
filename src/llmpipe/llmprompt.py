@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from typing import List, Dict
 
@@ -5,6 +6,9 @@ from llmpipe.field import Input, Output
 from llmpipe.llmchat import LlmChat
 from llmpipe.template import Template
 from llmpipe.xml import parse_text_for_one_tag
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -75,6 +79,8 @@ class LlmPrompt(LlmChat):
         self.clear_history()
         try:
             response_text = self._call(prompt=Template(self.prompt).format(**inputs))
+            logger.info(f"LlmPrompt response: {response_text}")
+            logger.info(f"Token counts - Last: {self.tokens.last}, Total: {self.tokens.total}")
         except Exception as e:
             print(e)
             response_text = ""

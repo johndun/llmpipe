@@ -1,9 +1,13 @@
 import json
+import logging
 from dataclasses import dataclass
 from typing import Dict, List, Callable, Union, Generator
 
 from litellm import completion, ModelResponse, get_model_info, stream_chunk_builder
 from litellm.utils import function_to_dict
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -180,6 +184,9 @@ class LlmChat:
 
     def __call__(self, prompt: str = "", prefill: str = "") -> Union[str, Generator]:
         if not self.stream:
-            return self._call(prompt=prompt, prefill=prefill)
+            response = self._call(prompt=prompt, prefill=prefill)
+            logger.info(f"LlmChat response: {response}")
+            logger.info(f"Token counts - Last: {self.tokens.last}, Total: {self.tokens.total}")
+            return response
         else:
             return self._call_stream(prompt=prompt, prefill=prefill)
