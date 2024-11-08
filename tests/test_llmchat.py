@@ -109,17 +109,26 @@ def test_llmchat_with_tools():
     assert chat.tool_schemas[1]["function"]["name"] == "greet"
     
     # Mock a response with tool calls
-    mock_tool_call = type('ToolCall', (), {
-        'id': 'call1',
-        'function': type('Function', (), {
-            'name': 'add',
-            'arguments': '{"a": 5, "b": 3}',
-            'model_dump': lambda: {
-                'name': 'add',
-                'arguments': '{"a": 5, "b": 3}'
+    class MockFunction:
+        def __init__(self):
+            self.name = 'add'
+            self.arguments = '{"a": 5, "b": 3}'
+            
+        def model_dump(self):
+            return {
+                'name': self.name,
+                'arguments': self.arguments
             }
-        })
-    })
+            
+        def __iter__(self):
+            return iter([('name', self.name), ('arguments', self.arguments)])
+
+    class MockToolCall:
+        def __init__(self):
+            self.id = 'call1'
+            self.function = MockFunction()
+
+    mock_tool_call = MockToolCall()
     
     mock_response = type('MockResponse', (), {
         'choices': [
@@ -127,6 +136,7 @@ def test_llmchat_with_tools():
                 'message': type('Message', (), {
                     'content': 'Let me calculate that for you.',
                     'tool_calls': [mock_tool_call],
+                    'role': 'assistant',
                     'model_dump': lambda: {
                         'role': 'assistant',
                         'content': 'Let me calculate that for you.',
