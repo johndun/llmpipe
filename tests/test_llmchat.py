@@ -1,5 +1,6 @@
 import pytest
-from llmpipe.llmchat import Tokens
+from unittest.mock import patch
+from llmpipe.llmchat import Tokens, LlmChat
 
 
 def test_tokens_init():
@@ -41,3 +42,47 @@ def test_tokens_formatting():
     tokens.add(4321, 765)
     assert tokens.last == "in: 4,321, out: 765"
     assert tokens.total == "in: 5,555, out: 1,332"
+
+
+def test_llmchat_basic_call():
+    """Test basic LLM chat interaction"""
+    chat = LlmChat(system_prompt="You are a helpful assistant.")
+    
+    # Mock response data
+    mock_response = type('MockResponse', (), {
+        'choices': [
+            type('Choice', (), {
+                'message': type('Message', (), {
+                    'content': 'Hello! How can I help you today?',
+                    'tool_calls': None,
+                    'model_dump': lambda: {
+                        'role': 'assistant',
+                        'content': 'Hello! How can I help you today?'
+                    }
+                })
+            })
+        ],
+        'usage': type('Usage', (), {
+            'prompt_tokens': 20,
+            'completion_tokens': 10
+        })
+    })
+
+    # Test chat interaction with mocked completion
+    with patch('llmpipe.llmchat.completion', return_value=mock_response):
+        response = chat("Hi there!")
+        
+        # Verify response content
+        assert response == "Hello! How can I help you today?"
+        
+        # Verify token counting
+        assert chat.tokens.last == "in: 20, out: 10"
+        assert chat.tokens.total == "in: 20, out: 10"
+        
+        # Verify chat history
+        assert len(chat.history) == 3  # system + user + assistant
+        assert chat.history[0]['role'] == 'system'
+        assert chat.history[1]['role'] == 'user'
+        assert chat.history[1]['content'] == 'Hi there!'
+        assert chat.history[2]['role'] == 'assistant'
+        assert chat.history[2]['content'] == 'Hello! How can I help you today?'
