@@ -44,6 +44,14 @@ def test_tokens_formatting():
     assert tokens.total == "in: 5,555, out: 1,332"
 
 
+def add(a: int, b: int) -> int:
+    """Add two numbers"""
+    return a + b
+
+def greet(name: str) -> str:
+    """Greet someone"""
+    return f"Hello {name}!"
+
 def test_llmchat_basic_call():
     """Test basic LLM chat interaction"""
     chat = LlmChat(system_prompt="You are a helpful assistant.")
@@ -86,3 +94,74 @@ def test_llmchat_basic_call():
         assert chat.history[1]['content'] == 'Hi there!'
         assert chat.history[2]['role'] == 'assistant'
         assert chat.history[2]['content'] == 'Hello! How can I help you today?'
+
+
+def test_llmchat_with_tools():
+    """Test LLM chat with function calling"""
+    chat = LlmChat(
+        system_prompt="You are a helpful assistant.",
+        tools=[add, greet]
+    )
+    
+    # Verify tool registration
+    assert len(chat.tool_schemas) == 2
+    assert chat.tool_schemas[0]["function"]["name"] == "add"
+    assert chat.tool_schemas[1]["function"]["name"] == "greet"
+    
+    # Mock a response with tool calls
+    mock_tool_call = type('ToolCall', (), {
+        'id': 'call1',
+        'function': type('Function', (), {
+            'name': 'add',
+            'arguments': '{"a": 5, "b": 3}',
+            'model_dump': lambda: {
+                'name': 'add',
+                'arguments': '{"a": 5, "b": 3}'
+            }
+        })
+    })
+    
+    mock_response = type('MockResponse', (), {
+        'choices': [
+            type('Choice', (), {
+                'message': type('Message', (), {
+                    'content': 'Let me calculate that for you.',
+                    'tool_calls': [mock_tool_call],
+                    'model_dump': lambda: {
+                        'role': 'assistant',
+                        'content': 'Let me calculate that for you.',
+                        'tool_calls': [{
+                            'id': 'call1',
+                            'function': {
+                                'name': 'add',
+                                'arguments': '{"a": 5, "b": 3}'
+                            }
+                        }]
+                    }
+                })
+            })
+        ],
+        'usage': type('Usage', (), {
+            'prompt_tokens': 30,
+            'completion_tokens': 15
+        })
+    })
+
+    # Test chat interaction with tool calls
+    with patch('llmpipe.llmchat.completion') as mock_completion:
+        # First response uses tool
+        mock_completion.return_value = mock_response
+        response = chat("What is 5 + 3?")
+        
+        # Verify tool call was processed
+        assert "Tool call:" in response
+        assert '"name": "add"' in response
+        assert '"a": 5' in response
+        assert '"b": 3' in response
+        assert "Tool response:" in response
+        assert "8" in response
+        
+        # Verify history includes tool interaction
+        tool_message = next(msg for msg in chat.history if msg.get('role') == 'tool')
+        assert tool_message['name'] == 'add'
+        assert tool_message['content'] == '8'
