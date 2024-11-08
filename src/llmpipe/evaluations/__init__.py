@@ -11,6 +11,7 @@ from .is_in_allow_list import IsInAllowList
 
 
 def deterministic_eval_factory(
+        type: str,
         field: str,
         value: Union[int, float, str] = None,
         label: str = None
@@ -18,6 +19,7 @@ def deterministic_eval_factory(
     """Returns an evaluation
 
     Args:
+        type s(str): The type of evaluation to create
         field (str): The field that the evaluation applies to
         value (Union[int, float, str]): Initialization parameter to pass to the Evaluation subclass
         label (str): A brief description of the requirement
