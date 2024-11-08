@@ -1,0 +1,28 @@
+[project]
+name = "llmpipe"
+version = "0.1.0"
+description = "A toolkit for building LLM pipelines"
+authors = [
+    {name = "John Dunavent", email = "dunavent.jm@gmail.com"},
+]
+dependencies = [
+    "litellm>=1.52",
+    "typer>=0.13"
+]
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "ipython",
+    "polars>=1.12",
+    "nb-clean>=3.3.0",
+    "pytest-cov>=2.0",
+    "pdoc3>=0.11",
+    "jupyter>=1.1.1",
+    "aider>=0.2.6"
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
