@@ -97,8 +97,8 @@ class LlmChat:
             function_name = tool_call.function.name
             function_to_call = self.tools_map[function_name]
             function_args = json.loads(tool_call.function.arguments)
-            function_response = function_to_call(**function_args) or ""
-            response_text += "\n\n#### Tool response:\n\n" + function_response
+            function_response = function_to_call(**function_args)
+            response_text += "\n\n#### Tool response:\n\n" + str(function_response or "")
             self.history.append({
                 "tool_call_id": tool_call.id,
                 "role": "tool",
