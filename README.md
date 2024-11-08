@@ -17,3 +17,17 @@ pip install "."
 # or
 pip install -e ".[dev]"
 ```
+
+## Notes
+
+To build the docs:
+
+```bash
+pdoc -o docs --force src/llmpipe
+```
+
+To clean notebooks before committing:
+
+```bash
+nb-clean clean -o notebooks/*.ipynb
+```
