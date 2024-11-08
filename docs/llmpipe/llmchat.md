@@ -16,6 +16,10 @@ Classes
     print(chat.tokens.total)
     ```
 
+    ### Descendants
+
+    * llmpipe.llmprompt.LlmPrompt
+
     ### Class variables
 
     `max_tokens: int`
