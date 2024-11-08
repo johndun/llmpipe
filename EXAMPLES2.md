@@ -43,6 +43,9 @@ qa_prompt = LlmPrompt(
     task="Provide a clear and accurate answer to the given question."
 )
 
+# Print the generated prompt template
+print(qa_prompt.prompt)
+
 response = qa_prompt(question="What causes the seasons on Earth?")
 print(response["answer"])
 ```
