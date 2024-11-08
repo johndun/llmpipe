@@ -16,7 +16,7 @@ Sub-modules
 Functions
 ---------
 
-`deterministic_eval_factory(type: str, field: str, value: Union[int, float, str] = None, label: str = None) ‑> llmpipe.evaluations.core.Evaluation`
+`eval_factory(type: str, field: str, value: Union[int, float, str, List] = None, label: str = None, **kwargs) ‑> llmpipe.evaluations.core.Evaluation`
 :   Returns an evaluation
     
     Args:
