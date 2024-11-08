@@ -7,6 +7,8 @@ from llmpipe.evaluations.core import Evaluation, EvalResult
 class MaxCharacters(Evaluation):
     """Evaluates a field for a maximum number of characters requirement"""
     max_chars: int = 50
+    requirement: str = None
+    type: str = "deterministic"
 
     def __post_init__(self):
         if not self.requirement:
