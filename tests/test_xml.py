@@ -1,5 +1,5 @@
 import pytest
-from llmpipe.xml import XmlBlock, parse_text_for_tags, parse_text_for_tag
+from llmpipe.xml import XmlBlock, parse_text_for_tags, parse_text_for_tag, parse_text_for_one_tag
 
 def test_xml_block_basic():
     text = "<test>content</test>"
@@ -34,3 +34,21 @@ def test_no_tags():
     text = "plain text without any tags"
     assert parse_text_for_tags(text) == []
     assert parse_text_for_tag(text, "test") == []
+
+def test_parse_text_for_one_tag_basic():
+    text = "<test>content</test>"
+    result = parse_text_for_one_tag(text, "test")
+    assert result == "content"
+
+def test_parse_text_for_one_tag_multiple():
+    text = """
+    <test>first</test>
+    <other>middle</other>
+    <test>last</test>
+    """
+    result = parse_text_for_one_tag(text, "test")
+    assert result == "last"  # Should return the last matching tag
+
+def test_parse_text_for_one_tag_empty():
+    assert parse_text_for_one_tag("", "test") == ""
+    assert parse_text_for_one_tag("<other>content</other>", "test") == ""
