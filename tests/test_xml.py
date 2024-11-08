@@ -8,6 +8,11 @@ def test_xml_block_basic():
     assert blocks[0].tag == "test"
     assert blocks[0].content == "content"
 
+def test_xml_block_repr():
+    block = XmlBlock(tag="test", content="content")
+    assert repr(block) == "<test>content</test>"
+    
+
 def test_xml_block_nested():
     text = "<outer>before<inner>nested</inner>after</outer>"
     blocks = parse_text_for_tags(text)
