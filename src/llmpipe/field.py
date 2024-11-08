@@ -8,7 +8,7 @@ from llmpipe.evaluations import eval_factory, Evaluation
 class Input:
     """Defines an LLM module input or output"""
     name: str  #: A name for the field
-    description: str  #: Description for the field
+    description: str = ""  #: Description for the field
 
     @property
     def markdown(self) -> str:

@@ -4,7 +4,7 @@ Module llmpipe.field
 Classes
 -------
 
-`Input(name: str, description: str)`
+`Input(name: str, description: str = '')`
 :   Defines an LLM module input or output
 
     ### Descendants
@@ -36,7 +36,7 @@ Classes
     `xml_close: str`
     :   Apply xml formatting to the input name
 
-`Output(name: str, description: str, evaluations: List[llmpipe.evaluations.core.Evaluation] = <factory>, inputs: List[llmpipe.field.Input] = <factory>)`
+`Output(name: str, description: str = '', evaluations: List[llmpipe.evaluations.core.Evaluation] = <factory>, inputs: List[llmpipe.field.Input] = <factory>)`
 :   Defines an LLM module input or output with evaluations and linked inputs
 
     ### Ancestors (in MRO)

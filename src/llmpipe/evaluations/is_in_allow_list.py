@@ -14,9 +14,9 @@ class IsInAllowList(Evaluation):
 
     def __post_init__(self):
         if not self.requirement and self.allowed_terms and not self.allowed_terms_field:
-            self.requirement = f"Must be one of the following terms: {', '.join(self.allowed_terms)}"
+            self.requirement = f"Must be one of the following: {', '.join(self.allowed_terms)}"
         elif not self.requirement and not self.allowed_terms and self.allowed_terms_field:
-            self.requirement = "Must be one of the following terms: {{" + self.allowed_terms_field + "}}"
+            self.requirement = "Must be one of the following: {{" + self.allowed_terms_field + "}}"
 
     def __call__(self, **inputs) -> EvalResult:
         text = inputs[self.field].lower()
@@ -32,6 +32,6 @@ class IsInAllowList(Evaluation):
                 field=self.field,
                 requirement=self.requirement,
                 evaluation_result="FAIL",
-                reason=f"'{inputs[self.field]}' is not in the list of allowed terms"
+                reason=f"'{inputs[self.field]}' is not in the list of allowed values"
             )
         return EvalResult(field=self.field, requirement=self.requirement, evaluation_result="PASS")

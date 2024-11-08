@@ -7,7 +7,7 @@ def test_is_in_allow_list_pass():
     result = evaluation(text="apple")
     assert result.evaluation_result == "PASS"
     assert result.field == "text"
-    assert "Must be one of the following terms" in result.requirement
+    assert "Must be one of the following" in result.requirement
 
 
 def test_is_in_allow_list_fail():

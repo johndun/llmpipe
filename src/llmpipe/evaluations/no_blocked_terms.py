@@ -14,9 +14,9 @@ class NoBlockedTerms(Evaluation):
 
     def __post_init__(self):
         if not self.requirement and self.blocked_terms and not self.blocked_terms_field:
-            self.requirement = f"Does not contain any of the following terms: {', '.join(self.blocked_terms)}"
+            self.requirement = f"Does not contain any of the following: {', '.join(self.blocked_terms)}"
         elif not self.requirement and not self.blocked_terms and self.blocked_terms_field:
-            self.requirement = "Does not contain any of the following terms: {{" + self.blocked_terms_field + "}}"
+            self.requirement = "Does not contain any of the following: {{" + self.blocked_terms_field + "}}"
 
     def __call__(self, **inputs) -> EvalResult:
         text = inputs[self.field]
@@ -35,6 +35,6 @@ class NoBlockedTerms(Evaluation):
                 field=self.field,
                 requirement=self.requirement,
                 evaluation_result="FAIL",
-                reason=f"Should not contain the blocked terms: {', '.join(matches)}"
+                reason=f"Should not contain the blocked text: {', '.join(matches)}"
             )
         return EvalResult(field=self.field, requirement=self.requirement, evaluation_result="PASS")
