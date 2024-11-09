@@ -1,4 +1,4 @@
-# LLMPipe Examples
+# LLMPipe Usage
 
 ## LlmPrompt Class Overview
 

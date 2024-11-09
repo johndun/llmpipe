@@ -20,10 +20,11 @@ Functions
 :   Returns an evaluation
     
     Args:
-        type s(str): The type of evaluation to create
+        type (str): The type of evaluation to create
         field (str): The field that the evaluation applies to
         value (Union[int, float, str]): Initialization parameter to pass to the Evaluation subclass
         label (str): A brief description of the requirement
+        **kwargs: Keyword arguments passed to `LlmEvaluation`
     
     Returns:
         Evaluation: An initalized evaluation

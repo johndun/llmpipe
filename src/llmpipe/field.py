@@ -38,8 +38,17 @@ class Input:
 
 @dataclass
 class Output(Input):
-    """Defines an LLM module input or output with evaluations and linked inputs"""
-    evaluations: List[Evaluation] = field(default_factory=lambda: [])  #: Field evaluations
+    """Defines an LLM module input or output with evaluations and linked inputs
+
+    Evaluations should be dictionaries with keys:
+
+        type (str): The type of evaluation to create
+        value (Union[int, float, str]): Initialization parameter to pass to the Evaluation subclass
+        label (str): A brief description of the requirement
+        **kwargs: Keyword arguments passed to `LlmEvaluation`
+    
+    """
+    evaluations: List[Dict] = field(default_factory=lambda: [])  #: Field evaluations
     inputs: List[Input] = field(default_factory=lambda: [])  #: Inputs needed to generate this field
 
     def __post_init__(self):

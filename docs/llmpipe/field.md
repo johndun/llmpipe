@@ -36,8 +36,15 @@ Classes
     `xml_close: str`
     :   Apply xml formatting to the input name
 
-`Output(name: str, description: str = '', evaluations: List[llmpipe.evaluations.core.Evaluation] = <factory>, inputs: List[llmpipe.field.Input] = <factory>)`
+`Output(name: str, description: str = '', evaluations: List[Dict] = <factory>, inputs: List[llmpipe.field.Input] = <factory>)`
 :   Defines an LLM module input or output with evaluations and linked inputs
+    
+    Evaluations should be dictionaries with keys:
+    
+        type (str): The type of evaluation to create
+        value (Union[int, float, str]): Initialization parameter to pass to the Evaluation subclass
+        label (str): A brief description of the requirement
+        **kwargs: Keyword arguments passed to `LlmEvaluation`
 
     ### Ancestors (in MRO)
 
@@ -45,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `evaluations: List[llmpipe.evaluations.core.Evaluation]`
+    `evaluations: List[Dict]`
     :   Field evaluations
 
     `inputs: List[llmpipe.field.Input]`
