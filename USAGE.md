@@ -76,6 +76,62 @@ output = Output(
 )
 ```
 
+### Available Evaluation Configurations
+
+The following evaluation types can be configured through dictionaries passed to Output's `evaluations` parameter:
+
+1. `max_chars` - Limit maximum character length
+```python
+{"type": "max_chars", "value": 500}
+```
+
+2. `no_blocked_terms` - Prevent specific terms
+```python
+{"type": "no_blocked_terms", "value": ["skip", "unknown", "idk"]}
+```
+
+3. `not_in_blocked_list` - Check against a blocked list
+```python
+# Static list
+{"type": "not_in_blocked_list", "value": ["bad1", "bad2"]}
+# Dynamic list from input field
+{"type": "not_in_blocked_list", "blocked_list_field": "forbidden_values"}
+```
+
+4. `is_in_allow_list` - Validate against allowed values
+```python
+{"type": "is_in_allow_list", "value": ["option1", "option2"]}
+```
+
+5. `no_slashes` - Prevent slash-based placeholders
+```python
+{"type": "no_slashes"}
+```
+
+6. `no_square_brackets` - Prevent bracket-based placeholders
+```python
+{"type": "no_square_brackets"}
+```
+
+7. `no_long_words` - Limit word length
+```python
+{"type": "no_long_words", "max_chars": 15}
+```
+
+8. `llm` - LLM-based evaluation
+```python
+{
+    "type": "llm",
+    "value": "Must be a formal business tone",
+    "use_cot": True,  # Enable chain-of-thought reasoning
+    "label": "tone_check"  # Optional label for tracking
+}
+```
+
+Common optional parameters for all evaluations:
+- `label`: String identifier for the evaluation
+- `field`: Override which field to evaluate (defaults to the Output's field)
+
 ### Evaluation Results
 
 Each evaluation returns an `EvalResult` containing:
