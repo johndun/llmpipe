@@ -19,6 +19,7 @@ Classes
     ### Descendants
 
     * llmpipe.llmprompt.LlmPrompt
+    * llmpipe.llmprompt_formany.LlmPromptForMany
 
     ### Class variables
 

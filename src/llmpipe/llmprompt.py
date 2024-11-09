@@ -26,7 +26,6 @@ class LlmPrompt(LlmChat):
     task: str = ""  #: The task description at the top of the prompt
     details: str = ""  #: Task details that come after the input output definition sections
     footer: str = None  #: An optional prompt footer (text for the very end of the prompt)
-    break_after_first_fail: bool = True  #: If true, returns only the 1st failed evaluation
 
     def __post_init__(self):
         super().__post_init__()
@@ -97,7 +96,7 @@ class LlmPrompt(LlmChat):
         self.verify_outputs(outputs)
         return outputs
 
-    def evaluate(self, **inputs) -> Dict:
+    def evaluate(self, break_after_first_fail: bool = False, **inputs) -> Dict:
         """Run evaluations"""
         outputs = {}
 
@@ -116,7 +115,7 @@ class LlmPrompt(LlmChat):
                 eval_result = evaluation(**(inputs | outputs))
                 if eval_result.evaluation_result != "PASS":
                     evaluation_results.append(asdict(eval_result))
-                    if self.break_after_first_fail:
+                    if break_after_first_fail:
                         break
 
             outputs[f"{field.name}_eval"] = evaluation_results
@@ -126,7 +125,7 @@ class LlmPrompt(LlmChat):
         """Evaluate and revise"""
         # Iterate max_revision times or until all evaluations pass
         for revision_idx in range(max_revisions + 1):
-            eval_results = self.evaluate(**inputs)
+            eval_results = self.evaluate(**inputs, break_after_first_fail=True)
 
             for field in self.outputs:
                 eval_result = eval_results.get(f"{field.name}_eval")
@@ -142,7 +141,6 @@ class LlmPrompt(LlmChat):
                     outputs=[chain_of_thought, field],
                     **self.model_args
                 )
-                print(revisor.prompt)
                 eval_results_str = json.dumps(eval_result[0], indent=2)
                 logger.info(f"Revision {revision_idx + 1}: `{field.name}`")
                 revised = revisor(**inputs, evaluation_result=eval_results_str)

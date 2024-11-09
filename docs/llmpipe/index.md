@@ -7,5 +7,6 @@ Sub-modules
 * llmpipe.field
 * llmpipe.llmchat
 * llmpipe.llmprompt
+* llmpipe.llmprompt_formany
 * llmpipe.template
 * llmpipe.xml

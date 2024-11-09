@@ -334,3 +334,43 @@ print("Score:", response["score"])
 print("Evaluation Result:", eval_result)
 
 ```
+
+### Generate a List Outputs
+
+A modified `LlmPromptForMany` class enables generating multiple versions/copies of the same output. The below example is terribly contrived, but illustrates using an evaluation to either filter a list of outputs or revise each item individually.
+
+```python
+from llmpipe import Input, Output, LlmPromptForMany
+
+prompt = LlmPromptForMany(
+    inputs=[Input("category", "A category")],
+    output=Output("example", "An item that belongs to the category"),
+    task="Generate 6 examples of things belonging to a category."
+)
+prompt_w_criteria = LlmPromptForMany(
+    inputs=[Input("category", "A category")],
+    output=Output(
+        "example", 
+        "An item that belongs to the category", 
+        evaluations=[
+            {"type": "llm", "value": "Must be a calendar season"}
+        ]
+    ),
+    task="Generate examples of things belonging to a category."
+)
+
+# Print the generated prompt template
+print(prompt_w_criteria.prompt)
+
+results = prompt(category="Seasons")
+print("Original results: ", *results, sep="\n")
+
+eval_results = prompt_w_criteria.evaluate(results)
+print("Evaluation results: ", *eval_results, sep="\n")
+
+filtered_results = prompt_w_criteria.discard(results)
+print("Filtered results: ", *filtered_results, sep="\n")
+
+revised_results = prompt_w_criteria.revise(results)
+print("Revised results: ", *revised_results, sep="\n")
+```
