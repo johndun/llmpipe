@@ -1,5 +1,50 @@
 # LLMPipe Usage
 
+## Core Field Classes
+
+The `field` module provides two key classes for defining inputs and outputs:
+
+### Input Class
+
+The `Input` class defines fields that will be provided to prompts:
+
+```python
+from llmpipe import Input
+
+question = Input(
+    name="question",
+    description="The question to be answered"
+)
+```
+
+Key features:
+- Generates XML tags for structured input
+- Provides markdown formatting
+- Creates input templates with placeholders
+
+### Output Class
+
+The `Output` class extends `Input` to add evaluation capabilities:
+
+```python
+from llmpipe import Output
+
+answer = Output(
+    name="answer",
+    description="A detailed answer to the question",
+    evaluations=[
+        {"type": "max_chars", "value": 500},
+        {"type": "no_blocked_terms", "value": ["idk", "unknown"]}
+    ],
+    inputs=[question]  # Define inputs needed to generate this output
+)
+```
+
+Key features:
+- Supports multiple evaluation types
+- Can reference input fields needed for generation
+- Automatically converts evaluation configs into evaluation objects
+
 ## LlmPrompt Class Overview
 
 The `LlmPrompt` class is the core component for creating structured LLM interactions. It provides a framework for defining inputs, outputs, and evaluations.
