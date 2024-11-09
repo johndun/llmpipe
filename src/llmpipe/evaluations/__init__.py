@@ -40,7 +40,7 @@ def eval_factory(
     if type == "no_slashes":
         return NoSquareBrackets(field=field, requirement=label)
 
-    if type == "not_contains":
+    if type in("not_contains", "no_blocked_terms"):
         return NoBlockedTerms(field=field, blocked_terms=value, requirement=label)
 
     if type == "not_in_blocked_list":
@@ -55,7 +55,7 @@ def eval_factory(
     if type == "no_long_words":
         return NoLongWords(field=field, max_chars=value, requirement=label)
 
-    if type == "is_in":
+    if type in("is_in", "is_in_allow_list"):
         return IsInAllowList(field=field, allowed_terms=value, requirement=label)
 
     if type == "is_in_field":

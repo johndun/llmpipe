@@ -124,7 +124,6 @@ class LlmPrompt(LlmChat):
 
     def revise(self, max_revisions: int = 6, **inputs) -> Dict:
         """Evaluate and revise"""
-        outputs = {}
         # Iterate max_revision times or until all evaluations pass
         for revision_idx in range(max_revisions + 1):
             eval_results = self.evaluate(**inputs)
@@ -148,6 +147,6 @@ class LlmPrompt(LlmChat):
                 logger.info(f"Revision {revision_idx + 1}: `{field.name}`")
                 revised = revisor(**inputs, evaluation_result=eval_results_str)
                 if revised[field.name].strip():
-                    outputs[field.name] = revised[field.name].strip()
+                    inputs[field.name] = revised[field.name].strip()
 
-        return outputs
+        return inputs
