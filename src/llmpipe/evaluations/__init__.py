@@ -59,7 +59,7 @@ def eval_factory(
     if type in("is_in", "is_in_allow_list"):
         return IsInAllowList(field=field, allowed_terms=value, requirement=label)
 
-    if type == "is_in_field":
+    if type in("is_in_field", "is_in_allow_list_field"):
         return IsInAllowList(field=field, allowed_terms_field=value, requirement=label)
 
     if type == "llm":

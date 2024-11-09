@@ -86,25 +86,29 @@ The following evaluation types can be configured through dictionaries passed to 
 {"type": "max_chars", "value": 500}
 ```
 
-2. `no_blocked_terms` - Prevent specific terms
+2. `no_blocked_terms` - Prevent specific terms in an output
 
 ```python
 {"type": "no_blocked_terms", "value": ["skip", "unknown", "idk"]}
+# Dynamic list from input field
+{"type": "not_in_blocked_list_field", "value": "additional_blocked_terms"}
 ```
 
-3. `not_in_blocked_list` - Check against a blocked list
+3. `not_in_blocked_list` - Check that an output isn't identical to any of a blocked list of values
 
 ```python
 # Static list
 {"type": "not_in_blocked_list", "value": ["bad1", "bad2"]}
 # Dynamic list from input field
-{"type": "not_in_blocked_list", "blocked_list_field": "forbidden_values"}
+{"type": "not_in_blocked_list_field", "value": "forbidden_values"}
 ```
 
 4. `is_in_allow_list` - Validate against allowed values
 
 ```python
 {"type": "is_in_allow_list", "value": ["option1", "option2"]}
+# Dynamic list from input field
+{"type": "is_in_allow_list_field", "value": "allowed_values"}
 ```
 
 5. `no_slashes` - Prevent slash-based placeholders
@@ -122,7 +126,7 @@ The following evaluation types can be configured through dictionaries passed to 
 7. `no_long_words` - Limit word length
 
 ```python
-{"type": "no_long_words", "max_chars": 15}
+{"type": "no_long_words", "value": 15}
 ```
 
 8. `llm` - LLM-based evaluation
@@ -132,6 +136,7 @@ The following evaluation types can be configured through dictionaries passed to 
     "type": "llm",
     "value": "Must be a formal business tone",
     "use_cot": True,  # Enable chain-of-thought reasoning
+    ...  # Additional arguments passed to LiteLLM
 }
 ```
 
