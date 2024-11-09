@@ -55,14 +55,13 @@ class Output(Input):
         if self.inputs and not isinstance(self.inputs[0], Input):
             self.inputs = [Input(**x) for x in self.inputs]
 
-        if self.evaluations and isinstance(self.evaluations[0], dict):
-            # Each evaluation is expected to be a dict with keys "type" and "value" (and maybe others)
-            self.evaluations = [
-                eval_factory(
-                    field=self.name,
-                    field_description=self.description,
-                    inputs=self.inputs,
-                    **x
-                )
-                for x in self.evaluations
-            ]
+        # Convert any dict evaluations to Evaluation objects
+        self.evaluations = [
+            eval_factory(
+                field=self.name,
+                field_description=self.description,
+                inputs=self.inputs,
+                **x
+            ) if isinstance(x, dict) else x
+            for x in self.evaluations
+        ]
