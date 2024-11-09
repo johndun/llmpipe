@@ -53,13 +53,14 @@ The `evaluations` module provides a framework for validating LLM outputs through
 
 - `MaxCharacters`: Ensures output length is within limits
 - `NoBlockedTerms`: Checks for absence of specified terms
+- `NotInBlockedList`: Checks if an output is in a blocked list
 - `IsInAllowList`: Validates output against allowed values
 - `NoSlashes`, `NoSquareBrackets`: Enforce formatting rules
 - `LlmEvaluation`: Uses LLM to evaluate complex criteria
 
 ### Using Evaluations
 
-Evaluations can be added to Output fields in two ways:
+Evaluations can be added to Output fields as dictionaries:
 
 ```python
 from llmpipe import Output, LlmEvaluation
@@ -71,19 +72,6 @@ output = Output(
     evaluations=[
         {"type": "max_chars", "value": 200},
         {"type": "no_blocked_terms", "value": ["skip", "unknown"]}
-    ]
-)
-
-# 2. Using evaluation classes directly
-output = Output(
-    name="summary",
-    description="A concise summary",
-    evaluations=[
-        MaxCharacters(value=200),
-        LlmEvaluation(
-            value="Must be factual and objective",
-            use_cot=True
-        )
     ]
 )
 ```
