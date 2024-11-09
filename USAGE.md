@@ -45,6 +45,56 @@ Key features:
 - Can reference input fields needed for generation
 - Automatically converts evaluation configs into evaluation objects
 
+## Evaluation Classes
+
+The `evaluations` module provides a framework for validating LLM outputs through various evaluation types:
+
+### Core Evaluation Types
+
+- `MaxCharacters`: Ensures output length is within limits
+- `NoBlockedTerms`: Checks for absence of specified terms
+- `IsInAllowList`: Validates output against allowed values
+- `NoSlashes`, `NoSquareBrackets`: Enforce formatting rules
+- `LlmEvaluation`: Uses LLM to evaluate complex criteria
+
+### Using Evaluations
+
+Evaluations can be added to Output fields in two ways:
+
+```python
+from llmpipe import Output, LlmEvaluation
+
+# 1. Using dictionary configuration
+output = Output(
+    name="summary",
+    description="A concise summary",
+    evaluations=[
+        {"type": "max_chars", "value": 200},
+        {"type": "no_blocked_terms", "value": ["skip", "unknown"]}
+    ]
+)
+
+# 2. Using evaluation classes directly
+output = Output(
+    name="summary",
+    description="A concise summary",
+    evaluations=[
+        MaxCharacters(value=200),
+        LlmEvaluation(
+            value="Must be factual and objective",
+            use_cot=True
+        )
+    ]
+)
+```
+
+### Evaluation Results
+
+Each evaluation returns an `EvalResult` containing:
+- `passed`: Boolean indicating success
+- `message`: Explanation of the result
+- `revision_prompt`: Suggested fixes (for failed evaluations)
+
 ## LlmPrompt Class Overview
 
 The `LlmPrompt` class is the core component for creating structured LLM interactions. It provides a framework for defining inputs, outputs, and evaluations.
