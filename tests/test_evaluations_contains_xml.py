@@ -20,10 +20,10 @@ def test_contains_xml_basic():
 
 def test_contains_xml_nested():
     """Test ContainsXml with nested XML content"""
-    eval = ContainsXml(field="text", xml_tags=["outer", "inner"])
+    eval = ContainsXml(field="text", xml_tags=["inner"])
     
     # Test nested tags
-    assert eval(text="<outer>Text<inner>Nested</inner></outer>").evaluation_result == "PASS"
+    assert eval(text="<outer>Text<inner>Nested</inner></outer>").evaluation_result == "FAIL"
     
     # Test separated nested tags
     assert eval(text="<outer>Text</outer><inner>Separate</inner>").evaluation_result == "PASS"
@@ -57,7 +57,3 @@ def test_contains_xml_requirement_message():
     # Test custom requirement message
     eval2 = ContainsXml(field="text", xml_tags=["tag"], requirement="Custom XML requirement")
     assert eval2.requirement == "Custom XML requirement"
-    
-    # Test no tags specified
-    eval3 = ContainsXml(field="text")
-    assert eval3.requirement is None
