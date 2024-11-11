@@ -131,6 +131,7 @@ class LlmPrompt(LlmChat):
                 eval_result = eval_results.get(f"{field.name}_eval")
                 if not eval_result:
                     continue
+                print(f"Revision attempt {revision_idx + 1}")
                 chain_of_thought = Output("thinking", "Begin by thinking step by step")
                 evaluation_result = Input("evaluation_result", "An evaluation result")
                 revisor = LlmPrompt(

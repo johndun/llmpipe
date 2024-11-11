@@ -35,7 +35,7 @@ class IsInString(Evaluation):
                 self.requirement = "Must be contained in: {{" + self.target_string_field + "}}"
 
     def __call__(self, **inputs) -> EvalResult:
-        text = inputs[self.field].lower()
+        text = inputs[self.field].lower().strip()
         target = self.target_string or ""
         
         if self.target_string_field is not None and self.target_string_field in inputs:

@@ -22,6 +22,7 @@ class LlmPromptForMany(LlmChat):
     task: str = ""  #: The task description at the top of the prompt
     details: str = ""  #: Task details that come after the input output definition sections
     footer: str = None  #: An optional prompt footer (text for the very end of the prompt)
+    cot_string: str = "Begin by thinking step by step"
 
 
     def __post_init__(self):
@@ -29,7 +30,10 @@ class LlmPromptForMany(LlmChat):
         super().__post_init__()
         if self.footer is None:
             inline = f"{self.output.xml}...{self.output.xml_close}"
-            self.footer = f"Generate the required outputs within XML tags:\n{inline}\n{inline}\n..."
+            if self.cot_string:
+                self.footer = f"Generate the required outputs within XML tags:\n<thinking>...</thinking>\n{inline}\n{inline}\n..."
+            else:
+                self.footer = f"Generate the required outputs within XML tags:\n{inline}\n{inline}\n..."
 
     @property
     def prompt(self) -> str:
@@ -44,7 +48,13 @@ class LlmPromptForMany(LlmChat):
             prompt.append(self.task)
 
         prompt.append("Generate the following outputs enclosed within XML tags:")
+
+        if self.cot_string:
+            cot = Output("thinking", "Begin by thinking step by step")
+            prompt.append(f"{cot.xml}\n{cot.description}\n{cot.xml_close}")
+
         prompt.append(f"{self.output.xml}\n{self.output.description}\n{self.output.xml_close}")
+
         if self.output.evaluations:
             prompt.append(f"Requirements for {self.output.markdown}:")
             prompt.append("\n".join([f"- {evl.requirement}" for evl in self.output.evaluations]))
@@ -76,8 +86,10 @@ class LlmPromptForMany(LlmChat):
             print(e)
             response_text = ""
 
-        outputs = [{self.output.name: x.strip()} for x in parse_text_for_tag(response_text, self.output.name)]
-        _ = [self.verify_outputs(x) for x in outputs]
+        outputs = {
+            self.output.name: [x.strip() for x in parse_text_for_tag(response_text, self.output.name)]
+        }
+        self.verify_outputs(outputs)
         return outputs
 
     def _evaluate(self, break_after_first_fail: bool = False, **inputs) -> Dict:
@@ -104,12 +116,25 @@ class LlmPromptForMany(LlmChat):
         outputs[f"{field.name}_eval"] = evaluation_results
         return outputs
 
-    def evaluate(self, inputs: List[Dict], break_after_first_fail: bool = False) -> List[Dict]:
-        return [self._evaluate(**x, break_after_first_fail=break_after_first_fail) for x in inputs]
+    def evaluate(self, break_after_first_fail: bool = False, **inputs) -> List[Dict]:
+        input_keys = [x.name for x in self.inputs]
+        orig_inputs = {k: v for k, v in inputs.items() if k in input_keys}
+        inputs = [
+            orig_inputs | {self.output.name: x}
+            for x in inputs[self.output.name]
+        ]
+        eval_results = [self._evaluate(**x, break_after_first_fail=break_after_first_fail) for x in inputs]
+        return {f"{self.output.name}_eval": [x[f"{self.output.name}_eval"] for x in eval_results]}
 
-    def discard(self, inputs: List[Dict]) -> List[Dict]:
-        eval_results = self.evaluate(inputs, break_after_first_fail=True)
-        return [x for x, evl in zip(inputs, eval_results) if not evl[f"{self.output.name}_eval"]]
+    def discard(self, **inputs: List[Dict]) -> List[Dict]:
+        eval_results = self.evaluate(**inputs, break_after_first_fail=True)
+        return {
+            self.output.name: [
+                x
+                for x, evl in zip(inputs[self.output.name], eval_results[f"{self.output.name}_eval"])
+                if not len(evl)
+            ]
+        }
 
     def _revise(self, max_revisions: int = 6, **inputs) -> Dict:
         """Evaluate and revise"""
@@ -139,5 +164,12 @@ class LlmPromptForMany(LlmChat):
 
         return inputs
 
-    def revise(self, inputs: List[Dict], max_revisions: int = 6) -> List[Dict]:
-        return [self._revise(**x, max_revisions=max_revisions) for x in inputs]
+    def revise(self, max_revisions: int = 6, **inputs) -> List[Dict]:
+        input_keys = [x.name for x in self.inputs]
+        orig_inputs = {k: v for k, v in inputs.items() if k in input_keys}
+        inputs = [
+            orig_inputs | {self.output.name: x}
+            for x in inputs[self.output.name]
+        ]
+        revised_results = [self._revise(**x, max_revisions=max_revisions) for x in inputs]
+        return {self.output.name: [x[self.output.name] for x in revised_results]}

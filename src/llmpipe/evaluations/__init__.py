@@ -30,6 +30,7 @@ def eval_factory(
     from llmpipe.evaluations.no_square_brackets import NoSquareBrackets
     from llmpipe.evaluations.not_in_blocked_list import NotInBlockedList
     from llmpipe.evaluations.is_in_allow_list import IsInAllowList
+    from llmpipe.evaluations.is_in_string import IsInString
     from llmpipe.evaluations.llm_eval import LlmEvaluation
 
     if type == "max_chars":
@@ -61,6 +62,12 @@ def eval_factory(
 
     if type in("is_in_field", "is_in_allow_list_field"):
         return IsInAllowList(field=field, allowed_terms_field=value, requirement=label)
+
+    if type in("is_in_string",):
+        return IsInString(field=field, target_string=value, requirement=label)
+
+    if type in("is_in_string_field",):
+        return IsInString(field=field, target_string_field=value, requirement=label)
 
     if type == "llm":
         return LlmEvaluation(field=field, requirement=value, **kwargs)

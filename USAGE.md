@@ -363,14 +363,64 @@ prompt_w_criteria = LlmPromptForMany(
 print(prompt_w_criteria.prompt)
 
 results = prompt(category="Seasons")
-print("Original results: ", *results, sep="\n")
+print("Original results: ", results)
 
-eval_results = prompt_w_criteria.evaluate(results)
-print("Evaluation results: ", *eval_results, sep="\n")
+eval_results = prompt_w_criteria.evaluate(category="Seasons", **results)
+print("Evaluation results: ", eval_results)
 
-filtered_results = prompt_w_criteria.discard(results)
-print("Filtered results: ", *filtered_results, sep="\n")
+filtered_results = prompt_w_criteria.discard(category="Seasons", **results)
+print("Filtered results: ", filtered_results)
 
-revised_results = prompt_w_criteria.revise(results)
-print("Revised results: ", *revised_results, sep="\n")
+revised_results = prompt_w_criteria.revise(category="Seasons", **results)
+print("Revised results: ", revised_results)
+```
+
+## Predefined Modules
+
+### Semantic Document Chunker
+
+Break a document into sections and subsections. (This is not extensively tested.)
+
+```python
+from llmpipe.modules import DocumentChunker
+
+with open("USAGE.md") as fin:
+    document = fin.read()
+
+chunker = DocumentChunker()
+print(chunker.chunker.prompt)
+print(chunker.titler.prompt)
+sections = chunker(document=document)
+
+outline = ""
+for section in sections:
+    if section["document"] == section["section"] == section["subsection"]:
+        outline += section["document"] + "\n"
+    elif section["section"] == section["subsection"]:
+        outline += "- " + section["section"] + "\n"
+    else:
+        outline += "  - " + section["subsection"] + "\n"
+print(outline)
+```
+
+### Convert Markdown List to JSON
+
+Convert a markdown or text list to JSON
+
+```python
+from llmpipe.modules import ConvertListToJson
+
+converter = ConvertListToJson()
+print(converter.converter.prompt)
+text = """
+Here are some things:
+
+- This is an item
+- This item has nested items
+  - A nested item
+- So does this one
+  - A nested item
+    - More nesting
+"""
+print(*converter(text_list=text), sep="\n---\n")
 ```

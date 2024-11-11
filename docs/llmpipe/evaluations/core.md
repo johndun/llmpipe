@@ -27,6 +27,7 @@ Classes
     ### Descendants
 
     * llmpipe.evaluations.is_in_allow_list.IsInAllowList
+    * llmpipe.evaluations.is_in_string.IsInString
     * llmpipe.evaluations.llm_eval.LlmEvaluation
     * llmpipe.evaluations.max_chars.MaxCharacters
     * llmpipe.evaluations.no_blocked_terms.NoBlockedTerms
