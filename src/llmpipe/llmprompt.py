@@ -130,10 +130,11 @@ class LlmPrompt(LlmChat):
             eval_results = self.evaluate(**inputs, break_after_first_fail=True)
 
             for field in self.outputs:
-                logger.info(f"Revision {revision_idx + 1} for `{field.name}`")
+                print(f"Revision {revision_idx + 1} for `{field.name}`")
                 eval_result = eval_results.get(f"{field.name}_eval")
                 if not eval_result:
                     continue
+                print("Revising: " + str(eval_result))
                 finished = False
                 chain_of_thought = Output("thinking", "Begin by thinking step by step")
                 evaluation_result = Input("evaluation_result", "An evaluation result")
