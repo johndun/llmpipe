@@ -26,7 +26,11 @@ class ExemplarGenerator:
         passing = Output(
             "example", "An example that meets the `requirement`", 
             inputs=[input, requirement],
-            evaluations=[{"type": "llm", "value": "Should not contain any comments about the requirement"}]
+            evaluations=[{
+                "type": "llm", 
+                "value": "Should not contain any comments about the requirement", 
+                "use_cot": False
+            }]
         )
         failing = Output(
             "example", "An example that does not meet the `requirement`", 
@@ -45,8 +49,14 @@ class ExemplarGenerator:
         )
 
     def __call__(self, **inputs) -> List[Dict]:
-        passing_exemplars = self.pass_exemplar_generator(**inputs)["example"]
-        failing_exemplars = self.fail_exemplar_generator(**inputs)["example"]
+        print("Generating passing exemplars...")
+        passing_exemplars = self.pass_exemplar_generator(**inputs)
+        print("Revising passing exemplars...")
+        passing_exemplars = self.pass_exemplar_generator.revise(**(inputs | passing_exemplars))["example"]
+        print("Generating failing exemplars...")
+        failing_exemplars = self.fail_exemplar_generator(**inputs)
+        print("Revising failing exemplars...")
+        failing_exemplars = self.fail_exemplar_generator.revise(**(inputs | failing_exemplars))["example"]
         return [
             inputs | {"groundtruth": "PASS" if idx < len(passing_exemplars) else "FAIL", "review": x}
             for idx, x in enumerate(passing_exemplars + failing_exemplars)

@@ -5,6 +5,16 @@ from llmpipe.llmprompt import LlmPrompt
 from llmpipe.llmprompt_formany import LlmPromptForMany
 
 
+TASK_DETAILS = """\
+Return the lines of the document or document section that break the text into top-level sections or subsections.
+
+- Each break line must exactly match an entire line, including markdown formatting and any special characters, but not including newlines, from the document
+- If a document- or section-level title is present, include it as the first section
+- Do not rely on header levels to determine what constitutes a top-level section
+- Section headers should be clearly indicated through some sort of formatting (markdown, etc.). If the text does not contain any clearly formatted sections, return the first line. Avoid splitting a document into a large number of single line sections.
+"""
+
+
 def _split_document_into_sections(document: str, breaks: list[str]) -> list[str]:
     """
     Split a document into sections based on a list of breaking points.
@@ -81,8 +91,7 @@ class DocumentChunker:
         )
         self.chunker = LlmPromptForMany(
             task="Split the document (or document section) into top-level sections (or subsections)",
-            details="Return the lines of the document or document section that break it into the top-level sections or subsections present. Each break line must exactly match an entire line, including markdown formatting and any special characters, but not including newlines, from the document. If a document- or section-level title is present, include it as the first section.",
-            inputs=section_break.inputs,
+            details=TASK_DETAILS,
             output=section_break,
             cot_string=chain_of_thought.description,
             **kwargs

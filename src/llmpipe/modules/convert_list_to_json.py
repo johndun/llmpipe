@@ -22,9 +22,10 @@ class ConvertListToJson:
         json_list = Output(
             "json_list", "JSON formatted version of the list from `text_list`",
             inputs=[inputs],
-            evaluations=[
-                {"type": "llm", "value": "Each element of the generated list should exactly match a single top-level item in the original list, including newlines and nested items, but not including the leading bullet or list index"}
-            ]
+            evaluations=[{
+                "type": "llm",
+                "value": "Each element of the generated list should exactly match a single top-level item in the original list, including newlines and nested items, but not including the leading bullet or list index"
+            }]
         )
         self.converter = LlmPrompt(
             task="""Convert the list found in `text_list` to a JSON-formatted list: ["item 1", "item 2", ...].""",

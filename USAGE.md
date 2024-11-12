@@ -273,7 +273,7 @@ story_generator = LlmPrompt(
                 {"type": "max_chars", "value": 500},  # Deterministic
                 {
                     "type": "llm", 
-                    "value": "Story must have a clear beginning, middle, and end",
+                    "value": "Has a clear beginning, middle, and end",
                     "use_cot": True
                 }
             ]
@@ -306,11 +306,11 @@ code_review = LlmPrompt(
             evaluations=[
                 {
                     "type": "llm", 
-                    "value": "Must address code style, performance, and security"
+                    "value": "Addresses code style, performance, and security"
                 },
                 {
                     "type": "llm", 
-                    "value": "Must provide specific examples for improvements"
+                    "value": "Provides specific examples for improvements"
                 }
             ]
         ),
@@ -330,7 +330,6 @@ eval_result = code_review.evaluate(code="def example(): pass", **response)
 print("Review:", response["review"])
 print("Score:", response["score"])
 print("Evaluation Result:", eval_result)
-
 ```
 
 ### Generate a List Outputs
@@ -353,7 +352,7 @@ prompt_w_criteria = LlmPromptForMany(
         "An item that belongs to the category", 
         inputs=[Input("category", "A category")],
         evaluations=[
-            {"type": "llm", "value": "Must be a calendar season"}
+            {"type": "llm", "value": "Is a calendar season"}
         ]
     ),
     task="Generate examples of things belonging to a category."
@@ -439,7 +438,7 @@ from datasets import Dataset
 
 review = Input("review", "Code review comments")
 exemplar_generator = ExemplarGenerator(review)
-inputs = {"requirement": "Must address code style, performance, and security"}
+inputs = {"requirement": "Address code style, performance, and security"}
 exemplars = exemplar_generator(**inputs)
 print(exemplars[0])
 
@@ -456,6 +455,6 @@ eval_results = Dataset.from_list(exemplars).map(
 
 print(
     sum([x["groundtruth"] == x["evaluation_result"] for x in eval_results]) / 
-    1. * len(eval_results)
+    (1. * len(eval_results))
 )
 ```
