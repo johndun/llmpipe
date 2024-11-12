@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 @dataclass
 class LlmPromptForMany(LlmChat):
     """An LLM prompt class that returns a list of outputs"""
-    inputs: List[Input] = field(default_factory=lambda: [])  #: Prompt inputs
     output: Output = None  #: The output
     inputs_header: str = "You are provided the following inputs:"  #: The inputs definition section header
     task: str = ""  #: The task description at the top of the prompt
@@ -27,6 +26,7 @@ class LlmPromptForMany(LlmChat):
 
     def __post_init__(self):
         assert self.output is not None
+        self.inputs = self.output.inputs
         super().__post_init__()
         if self.footer is None:
             inline = f"{self.output.xml}...{self.output.xml_close}"

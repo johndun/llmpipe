@@ -6,7 +6,17 @@ from llmpipe.llmprompt import LlmPrompt
 
 
 class ConvertListToJson:
-    """Convert a markdown list to a JSON formatted list"""
+    """Convert a markdown list to a JSON formatted list
+
+    Initialization Parameters:
+        **kwargs: Keyword arguments passed to `LlmPrompt`
+
+    Args:
+        text_list: A text/markdown list
+
+    Returns:
+        A list of strings
+    """
     def __init__(self, **kwargs):
         inputs = Input("text_list", "Text containing a list")
         json_list = Output(
@@ -17,13 +27,13 @@ class ConvertListToJson:
             ]
         )
         self.converter = LlmPrompt(
-            task="""Convert the list found in `text` to a JSON-formatted list: ["item 1", "item 2", ...].""",
+            task="""Convert the list found in `text_list` to a JSON-formatted list: ["item 1", "item 2", ...].""",
             inputs=json_list.inputs,
             outputs=[json_list],
             **kwargs
         )
 
-    def __call__(self, **inputs) -> List:
-        results = self.converter(**inputs)
-        revised_results = self.converter.revise(**(inputs | results))
+    def __call__(self, text_list: str) -> List[str]:
+        results = self.converter(text_list=text_list)
+        revised_results = self.converter.revise(text_list=text_list, **results)
         return json.loads(revised_results["json_list"])

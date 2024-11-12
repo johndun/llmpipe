@@ -156,7 +156,7 @@ The `LlmPrompt` class is the core component for creating structured LLM interact
 - `inputs`: List[Input] - Define the input fields expected by the prompt
 - `outputs`: List[Output] - Define the output fields to be generated
 - `task`: str - The main task description
-- `details`: str - Additional task details or instructions
+- `details`: str - Additional task details or instructions. This text gets re used for the revision prompt. Include here: guidelines that do not have associated evaluations and exemplars.
 - `inputs_header`: str - Header text for the inputs section (default: "You are provided the following inputs:")
 - `footer`: str - Optional footer text for the prompt
 - `break_after_first_fail`: bool - Stop evaluation after first failure (default: True)
@@ -306,13 +306,11 @@ code_review = LlmPrompt(
             evaluations=[
                 {
                     "type": "llm", 
-                    "value": "Must address code style, performance, and security",
-                    "use_cot": True
+                    "value": "Must address code style, performance, and security"
                 },
                 {
                     "type": "llm", 
-                    "value": "Must provide specific examples for improvements",
-                    "use_cot": True
+                    "value": "Must provide specific examples for improvements"
                 }
             ]
         ),
@@ -343,15 +341,17 @@ A modified `LlmPromptForMany` class enables generating multiple versions/copies 
 from llmpipe import Input, Output, LlmPromptForMany
 
 prompt = LlmPromptForMany(
-    inputs=[Input("category", "A category")],
-    output=Output("example", "An item that belongs to the category"),
+    output=Output(
+        "example", "An item that belongs to the category", 
+        inputs=[Input("category", "A category")]
+    ),
     task="Generate 6 examples of things belonging to a category."
 )
 prompt_w_criteria = LlmPromptForMany(
-    inputs=[Input("category", "A category")],
     output=Output(
         "example", 
         "An item that belongs to the category", 
+        inputs=[Input("category", "A category")],
         evaluations=[
             {"type": "llm", "value": "Must be a calendar season"}
         ]
@@ -423,4 +423,39 @@ Here are some things:
     - More nesting
 """
 print(*converter(text_list=text), sep="\n---\n")
+```
+
+### Generate Exemplars
+
+Create exemplars for a single-input LLM-as-a-judge evaluation:
+
+```python
+from dataclasses import asdict
+
+from llmpipe import Input, LlmEvaluation
+from llmpipe.modules import ExemplarGenerator
+from datasets import Dataset
+
+
+review = Input("review", "Code review comments")
+exemplar_generator = ExemplarGenerator(review)
+inputs = {"requirement": "Must address code style, performance, and security"}
+exemplars = exemplar_generator(**inputs)
+print(exemplars[0])
+
+evaluation = LlmEvaluation(
+    inputs=[review],
+    field=review.name, 
+    field_description=review.description, 
+    requirement=inputs["requirement"]
+)
+eval_results = Dataset.from_list(exemplars).map(
+    lambda sample: sample | asdict(evaluation(**sample)), 
+    num_proc=4, batched=False
+).to_list()
+
+print(
+    sum([x["groundtruth"] == x["evaluation_result"] for x in eval_results]) / 
+    1. * len(eval_results)
+)
 ```

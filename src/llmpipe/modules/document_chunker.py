@@ -1,5 +1,4 @@
 from typing import List, Dict
-from dataclasses import dataclass, field
 
 from llmpipe.field import Input, Output
 from llmpipe.llmprompt import LlmPrompt
@@ -48,10 +47,23 @@ def _split_document_into_sections(document: str, breaks: list[str]) -> list[str]
     return sections
 
 
-@dataclass
 class DocumentChunker:
-    """Break a document into sections and subsections."""
-    def __post_init__(self, **kwargs):
+    """Break a document into sections and subsections.
+
+    - If the first subsection of the document contains only the title, it will have equal metadata keys: document == section == subsection
+    - If a subsection contains only a section header, it will have equal metadata keys: section == subsection
+
+    Initialization Parameters:
+        **kwargs: Keyword arguments passed to `LlmPrompt`
+
+    Args:
+        document: The document to chunk
+        document_title: An optional title for the document. One will be generated if not provided.
+
+    Returns:
+        A list of dictionaries with keys: document, section, subsection, content
+    """
+    def __init__(self, **kwargs):
         inputs = Input("document", "A document")
         chain_of_thought = Output("thinking", "Begin by thinking step by step")
 

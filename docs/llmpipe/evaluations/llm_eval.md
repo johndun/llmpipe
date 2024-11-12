@@ -4,7 +4,7 @@ Module llmpipe.evaluations.llm_eval
 Classes
 -------
 
-`LlmEvaluation(field: str, requirement: str, type: str = 'llm', use_cot: bool = False, inputs: List[llmpipe.field.Input] = <factory>, field_description: str = '')`
+`LlmEvaluation(field: str, requirement: str, type: str = 'llm', use_cot: bool = True, inputs: List[llmpipe.field.Input] = <factory>, field_description: str = '')`
 :   An LLM-as-a-judge evaluation
 
     ### Ancestors (in MRO)

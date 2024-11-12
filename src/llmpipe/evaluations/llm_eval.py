@@ -10,7 +10,7 @@ from llmpipe.evaluations.core import Evaluation, EvalResult
 class LlmEvaluation(Evaluation):
     """An LLM-as-a-judge evaluation"""
     type: str = "llm"
-    use_cot: bool = False  #: If true, add a chain-of-thought request
+    use_cot: bool = True  #: If true, add a chain-of-thought request
     inputs: List[Input] = field(default_factory=lambda: [])  #: Inputs needed to perform the evaluation
     field_description: str = ""  #: Description of the field to apply the evaluation to
 
@@ -44,7 +44,7 @@ class LlmEvaluation(Evaluation):
         )
 
     def __call__(self, **sample):
-        result = self.generator(**sample, requirement=self.requirement)
+        result = self.generator(**{k: v for k, v in sample.items() if k != "requirement"}, requirement=self.requirement)
         return EvalResult(
             field=self.field,
             requirement=self.requirement,

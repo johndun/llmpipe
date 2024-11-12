@@ -3,6 +3,7 @@ Module llmpipe.evaluations
 
 Sub-modules
 -----------
+* llmpipe.evaluations.contains_xml
 * llmpipe.evaluations.core
 * llmpipe.evaluations.is_in_allow_list
 * llmpipe.evaluations.is_in_string

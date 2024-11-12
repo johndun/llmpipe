@@ -26,6 +26,7 @@ Classes
 
     ### Descendants
 
+    * llmpipe.evaluations.contains_xml.ContainsXml
     * llmpipe.evaluations.is_in_allow_list.IsInAllowList
     * llmpipe.evaluations.is_in_string.IsInString
     * llmpipe.evaluations.llm_eval.LlmEvaluation
