@@ -35,31 +35,22 @@ list_converter = ConvertListToJson()
 # Outline Rubrik
 outline_rubrik_output = Output(
     "rubrik", "An evaluation rubrik for an outline of a tutorial on a data science or coding topic",
-    inputs=[guide],
     evaluations=[
         {
             "type": "llm",
             "value": "Includes no unrealistic requirements, for example, that *all* sections include some kind of content (many documents have introduction and closing sections with very different content)",
-            "output_only": True,
-            "use_cot": True
         },
         {
             "type": "llm",
             "value": "Evaluates an outline of a tutorial, not the tutorial itself",
-            "output_only": True,
-            "use_cot": True
         },
         {
             "type": "llm",
             "value": "Does not include requirements related to external references, links, or citations",
-            "output_only": True,
-            "use_cot": False
         },
         {
             "type": "llm",
             "value": "Does not include requirements related to prerequisites or scope or time to complete",
-            "output_only": True,
-            "use_cot": False
         },
     ]
 )
@@ -70,7 +61,7 @@ The rubrik should provide a checklist for evaluating outlines of tutorials on te
 outline_rubrik_prompt = LlmPrompt(
     task=outline_rubrik_task,
     details=outline_rubrik_details,
-    inputs=outline_rubrik_output.inputs,
+    inputs=[guide],
     outputs=[cot, outline_rubrik_output]
 )
 response = outline_rubrik_prompt(guide=document)
@@ -88,17 +79,16 @@ with open("experiments/tutorials/outline_rubrik.json", "r") as fin:
     outline_rubrik = json.load(fin)
 
 
-outline_evals = [{"type": "llm", "use_cot": True, "output_only": True, "value": x} for x in outline_rubrik]
-outline_evals.append({"type": "llm", "use_cot": True, "output_only": True, "value": "Does not include time to complete"})
-outline_evals.append({"type": "llm", "use_cot": True, "output_only": True, "value": "Contains sections and subsections"})
+outline_evals = [{"type": "llm", "value": x} for x in outline_rubrik]
+outline_evals.append({"type": "llm", "value": "Does not include time to complete"})
+outline_evals.append({"type": "llm", "value": "Contains sections and subsections"})
 outline_output = Output(
     "outline", "An outline, containing header titles and 1-sentence descriptions of sections and subsections, for a data science or coding tutorial",
-    inputs=[topic],
     evaluations=outline_evals
 )
 outline_generator = LlmPrompt(
     task="Write an outline for a tutorial on the provided topic",
-    inputs=outline_output.inputs,
+    inputs=[topic],
     outputs=[cot, outline_output]
 )
 
@@ -148,30 +138,24 @@ print(guidelines)
 # Single Section Rubrik
 section_rubrik_output = Output(
     "rubrik", "An evaluation rubrik for a single section of a tutorial on a data science or coding topic",
-    inputs=[guide],
     evaluations=[
         {
             "type": "llm",
             "value": "Includes no unrealistic requirements, for example, asserting that all explanations be a single sentence (there will obviously be topics where this is infeasible).",
-            "output_only": True,
-            "use_cot": True
         },
         {
             "type": "llm",
             "value": "Does not include requirements related to external references, links, or citations",
-            "output_only": True,
             "use_cot": False
         },
         {
             "type": "llm",
             "value": "Does not include requirements related to time to complete",
-            "output_only": True,
             "use_cot": False
         },
         {
             "type": "llm",
             "value": "Does not include requirements related to images",
-            "output_only": True,
             "use_cot": False
         }
     ]
@@ -183,7 +167,7 @@ The rubrik should provide a checklist that enables identification of high qualit
 section_rubrik_prompt = LlmPrompt(
     task=section_rubrik_task,
     details=section_rubrik_details,
-    inputs=section_rubrik_output.inputs,
+    inputs=[guide],
     outputs=[cot, section_rubrik_output]
 )
 
@@ -201,21 +185,20 @@ with open("experiments/tutorials/section_rubrik.json", "r") as fin:
     section_rubrik = json.load(fin)
 
 
-section_evals = [{"type": "llm", "use_cot": True, "output_only": True, "value": x} for x in section_rubrik]
-section_evals.append({"type": "llm", "use_cot": False, "output_only": True, "value": """Does not contain and section ("##") or subsection ("###") headers"""})
+section_evals = [{"type": "llm", "value": x} for x in section_rubrik]
+section_evals.append({"type": "llm", "use_cot": False, "value": """Does not contain and section ("##") or subsection ("###") headers"""})
 section_text_output = Output(
     "section_text", "Text for the next section",
-    inputs=[
-        topic,
-        Input("outline", "Outline of the tutorial"),
-        Input("wip", "Previously drafted sections, ending with a header of the next section or subsection to be written"),
-    ],
     evaluations=section_evals
 )
 generate_section = LlmPrompt(
     task="""Generate text for the next section of a data science or coding tutorial. The section or subsection to be written is indicated by the header at the end of `wip`. Additional details about the section (or subsection) can be found in the `outline`.""",
     details="Tutorial Writing Guidelines:\n\n" + guidelines,
-    inputs=section_text_output.inputs,
+    inputs=[
+        topic,
+        Input("outline", "Outline of the tutorial"),
+        Input("wip", "Previously drafted sections, ending with a header of the next section or subsection to be written"),
+    ],
     outputs=[cot, section_text_output]
 )
 print(generate_section.prompt)

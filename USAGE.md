@@ -131,11 +131,14 @@ The following evaluation types can be configured through dictionaries passed to 
 
 8. `llm` - LLM-based evaluation
 
+A note on using llm-based evaluations. Be careful when deciding what inputs go into the evaluation. Often, an evaluation will not require anything but a single field. In other cases, an evaluation will require multiple inputs.
+
 ```python
 {
     "type": "llm",
     "value": "Must be a formal business tone",
     "use_cot": True,  # Enable chain-of-thought reasoning
+    "inputs": ...,  # Additional inputs needed to perform the evaluation
     ...  # Additional arguments passed to LiteLLM
 }
 ```
@@ -273,8 +276,7 @@ story_generator = LlmPrompt(
                 {"type": "max_chars", "value": 500},  # Deterministic
                 {
                     "type": "llm", 
-                    "value": "Has a clear beginning, middle, and end",
-                    "use_cot": True
+                    "value": "Has a clear beginning, middle, and end"
                 }
             ]
         )
@@ -317,7 +319,6 @@ code_review = LlmPrompt(
         Output(
             "score",
             "Review score (1-10)",
-            inputs=[Input("review", "Code review comments")],
             evaluations=[
                 {"type": "is_in_allow_list", "value": list(map(str, range(1, 11)))}
             ]
@@ -347,10 +348,10 @@ prompt = LlmPromptForMany(
     task="Generate 6 examples of things belonging to a category."
 )
 prompt_w_criteria = LlmPromptForMany(
+    inputs=[Input("category", "A category")],
     output=Output(
         "example", 
         "An item that belongs to the category", 
-        inputs=[Input("category", "A category")],
         evaluations=[
             {"type": "llm", "value": "Is a calendar season"}
         ]

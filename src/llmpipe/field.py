@@ -49,7 +49,7 @@ class Output(Input):
     
     """
     evaluations: List[Dict] = field(default_factory=lambda: [])  #: Field evaluations
-    inputs: List[Input] = field(default_factory=lambda: [])  #: Inputs needed to generate this field
+    inputs: List[Input] = field(default_factory=lambda: [])  #: Inputs needed to evaluate this field
 
     def __post_init__(self):
         if self.inputs and not isinstance(self.inputs[0], Input):
