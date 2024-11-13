@@ -71,7 +71,7 @@ def eval_factory(
         return IsInString(field=field, target_string_field=value, requirement=label)
 
     if type == "contains_xml":
-        return ContainsXml(field=field, target_string_field=value, requirement=label)
+        return ContainsXml(field=field, xml_tags=value, requirement=label)
 
     if type == "llm":
         return LlmEvaluation(field=field, requirement=value, **kwargs)

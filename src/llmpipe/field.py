@@ -52,8 +52,10 @@ class Output(Input):
     inputs: List[Input] = field(default_factory=lambda: [])  #: Inputs needed to evaluate this field
 
     def __post_init__(self):
-        if self.inputs and not isinstance(self.inputs[0], Input):
-            self.inputs = [Input(**x) for x in self.inputs]
+        self.inputs = [
+            Input(**x) if isinstance(x, dict) else x
+            for x in self.inputs
+        ]
 
         # Convert any dict evaluations to Evaluation objects
         self.evaluations = [

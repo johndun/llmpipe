@@ -26,9 +26,18 @@ class LlmPromptForMany(LlmChat):
 
 
     def __post_init__(self):
-        assert self.output is not None
-        self.inputs = self.output.inputs
         super().__post_init__()
+        assert self.output is not None
+
+        if isinstance(self.output, dict):
+            self.output = Output(**self.output)
+
+        self.inputs = self.inputs or self.output.inputs
+        self.inputs = [
+            Input(**x) if isinstance(x, dict) else x
+            for x in self.inputs
+        ]
+
         if self.footer is None:
             inline = f"{self.output.xml}...{self.output.xml_close}"
             if self.cot_string:

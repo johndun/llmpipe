@@ -49,7 +49,7 @@ def test_prompt_template():
 
 def test_verify_outputs():
     """Test output verification"""
-    output_field = Input(name="result", description="The result")
+    output_field = Output(name="result", description="The result")
     prompt = LlmPrompt(outputs=[output_field])
     
     # Should pass
