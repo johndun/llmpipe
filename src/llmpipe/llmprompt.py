@@ -42,6 +42,11 @@ class LlmPrompt(LlmChat):
                     inputs[inp.name] = inp
             self.inputs = list(inputs.values())
 
+        self.inputs = [
+            Input(**x) if isinstance(x, dict) else x
+            for x in self.inputs
+        ]
+
         if self.footer is None:
             if len(self.outputs) == 0:
                 self.footer = ""

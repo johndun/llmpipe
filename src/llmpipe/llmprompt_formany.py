@@ -150,7 +150,7 @@ class LlmPromptForMany(LlmChat):
         """Evaluate and revise"""
         # Iterate max_revision times or until all evaluations pass
         for revision_idx in range(max_revisions + 1):
-            logger.info(f"Revision iteration {revision_idx + 1}")
+            print(f"Revision iteration {revision_idx + 1}")
             eval_results = self._evaluate(**inputs, break_after_first_fail=True)
 
             field = self.output

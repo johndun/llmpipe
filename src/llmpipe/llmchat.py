@@ -121,14 +121,23 @@ class LlmChat:
             self.history + [{"role": "assistant", "content": prefill}]
         )
         completion_args = {"tools": self.tool_schemas} if self.tool_schemas else {}
-        response = completion(
-            model=self.model,
-            messages=messages,
-            top_p=self.top_p,
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-            **completion_args
-        )
+        if "claude-3-5-haiku" in self.model:
+            response = completion(
+                model=self.model,
+                messages=messages,
+                top_p=self.top_p,
+                temperature=self.temperature,
+                **completion_args
+            )
+        else:
+            response = completion(
+                model=self.model,
+                messages=messages,
+                top_p=self.top_p,
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                **completion_args
+            )
         response_text = prefill + (response.choices[0].message.content or "")
         response.choices[0].message.content = response_text
         self.history.append(response.choices[0].message.model_dump())
