@@ -5,17 +5,20 @@ def test_basic_chunking():
     """Test basic text chunking with simple paragraphs"""
     text = "This is paragraph one.\n\nThis is paragraph two.\n\nThis is paragraph three."
     chunks = chunk_text(text, 5)
-    assert len(chunks) == 2
-    assert "This is paragraph one." in chunks[0]
-    assert "This is paragraph two." in chunks[0]
-    assert "This is paragraph three." in chunks[1]
+    assert len(chunks) == 3
+    assert chunks[0] == "This is paragraph one."
+    assert chunks[1] == "This is paragraph two."
+    assert chunks[2] == "This is paragraph three."
 
 def test_large_paragraph_splitting():
     """Test splitting of large paragraphs"""
     text = "This is a very long paragraph that should be split into multiple chunks because it exceeds the word limit that we have set for testing purposes."
     chunks = chunk_text(text, 5)
-    assert len(chunks) == 4
+    assert len(chunks) == 6
     assert all(len(chunk.split()) <= 5 for chunk in chunks)
+    # Verify the first few chunks
+    assert chunks[0] == "This is a very long"
+    assert chunks[1] == "paragraph that should be split"
 
 def test_sentence_boundary_splitting():
     """Test splitting at sentence boundaries when possible"""
