@@ -62,8 +62,8 @@ class Output(Input):
             eval_factory(
                 field=self.name,
                 field_description=self.description,
-                inputs=self.inputs,
-                **x
+                inputs=x["inputs"] if "inputs" in x else self.inputs,
+                **{k: v for k, v in x.items() if k != "inputs"}
             ) if isinstance(x, dict) else x
             for x in self.evaluations
         ]

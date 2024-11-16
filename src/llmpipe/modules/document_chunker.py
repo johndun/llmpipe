@@ -102,7 +102,7 @@ class DocumentChunker:
             inputs=[{"name": "text", "description": "Text from a document"}]
         )
         self.titler = LlmPrompt(
-            task="Generate a header, using title case and no formatting, for a document or a section of a document. If the text starts with a header, simply return it without markdown or other formatting.",
+            task="Generate a title or header, using title case and no formatting, for a document or a section of a document. If the text starts with a title or a header, simply return it without markdown or other formatting.",
             inputs=header.inputs,
             outputs=[chain_of_thought, header],
             **kwargs
@@ -131,29 +131,43 @@ class DocumentChunker:
         sections = [{"title": k, "content": v} for k, v in zip(section_headers, sections)]
         return sections
 
-    def __call__(self, document: str, document_title: str = "") -> List[Dict]:
+    def __call__(self, document: str, document_title: str = "", do_subsections: bool = True) -> List[Dict]:
         if not document_title:
             print("Generating a document title...")
             document_title = self.titler(text=document)["header"]
+            print(document_title)
         print("Performing top level segmentation...")
         sections = self._call(document=document, document_title=document_title)
         print(f"{len(sections)} sections identified")
-        for idx, section in enumerate(sections):
-            print(f"Performing segmentation of section {idx + 1}: {section['title']}...")
-            subsections = self._call(document=section["content"], document_title=section["title"])
-            print(f"{len(subsections)} subsections identified")
-            section["content"] = subsections
 
-        subsection_list = []
+        if do_subsections:
+            for idx, section in enumerate(sections):
+                print(f"Performing segmentation of section {idx + 1}: {section['title']}...")
+                subsections = self._call(document=section["content"], document_title=section["title"])
+                print(f"{len(subsections)} subsections identified")
+                section["content"] = subsections
+
+            subsection_list = []
+            for section in sections:
+                section_title = section["title"]
+                for subsection in section["content"]:
+                    subsection_title = subsection["title"]
+                    subsection_list.append({
+                        "document": document_title,
+                        "section": section_title,
+                        "subsection": subsection_title,
+                        "content": subsection["content"]
+                    })
+            print(f"Chunked the document into {len(subsection_list)} sections.")
+            return subsection_list
+
+        section_list = []
         for section in sections:
-            section_title = section["title"]
-            for subsection in section["content"]:
-                subsection_title = subsection["title"]
-                subsection_list.append({
-                    "document": document_title,
-                    "section": section_title,
-                    "subsection": subsection_title,
-                    "content": subsection["content"]
-                })
-        print(f"Chunked the document into {len(subsection_list)} sections.")
-        return subsection_list
+            section_list.append({
+                "document": document_title,
+                "section": section["title"],
+                "subsection": section["title"],
+                "content": section["content"]
+            })
+        print(f"Chunked the document into {len(section_list)} sections.")
+        return section_list
