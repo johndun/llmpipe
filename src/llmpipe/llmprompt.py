@@ -28,6 +28,7 @@ class LlmPrompt(LlmChat):
     details: str = ""  #: Task details that come after the input output definition sections
     footer: str = None  #: An optional prompt footer (text for the very end of the prompt)
     include_evals_in_prompt: bool = True  #: Whether to include evaluation requirements in the prompt
+    verbose: bool = False  #: If true, print additional LLM output to stdout
 
     def __post_init__(self):
         super().__post_init__()
@@ -103,7 +104,13 @@ class LlmPrompt(LlmChat):
         self.clear_history()
 
         try:
-            response_text = self._call(prompt=Template(self.prompt).format(**inputs))
+            if self.verbose:
+                response_text = ""
+                for chunk in self._call_stream(prompt=Template(self.prompt).format(**inputs)):
+                    print(chunk, flush=True, end="")
+                    response_text += chunk
+            else:
+                response_text = self._call(prompt=Template(self.prompt).format(**inputs))
             logger.info(f"LlmPrompt response: {response_text}")
             logger.info(f"Token counts - Last: {self.tokens.last}, Total: {self.tokens.total}")
         except Exception as e:
@@ -115,6 +122,9 @@ class LlmPrompt(LlmChat):
             outputs[field.name] = parse_text_for_one_tag(response_text, field.name).strip()
 
         self.verify_outputs(outputs)
+
+        if self.verbose:
+            print(f"Tokens used: {self.tokens.total}")
         return outputs
 
     def evaluate(self, break_after_first_fail: bool = False, **inputs) -> Dict:
@@ -147,17 +157,18 @@ class LlmPrompt(LlmChat):
     def revise(self, max_revisions: int = 6, **inputs) -> Dict:
         """Evaluate and revise"""
         # Iterate max_revision times or until all evaluations pass
-
         for revision_idx in range(max_revisions + 1):
             finished = True
             eval_results = self.evaluate(**inputs, break_after_first_fail=True)
 
             for field in self.outputs:
-                print(f"Revision {revision_idx + 1} for `{field.name}`")
+                if self.verbose:
+                    print(f"Revision iteration {revision_idx + 1} for `{field.name}`")
                 eval_result = eval_results.get(f"{field.name}_eval")
                 if not eval_result:
                     continue
-                print("Revising: " + str(eval_result))
+                if self.verbose:
+                    print("Revising for: " + str(eval_result))
                 finished = False
                 chain_of_thought = Output("thinking", "Begin by thinking step by step")
                 evaluation_result = Input("evaluation_result", "An evaluation result")

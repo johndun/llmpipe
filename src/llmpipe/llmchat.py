@@ -66,6 +66,7 @@ class LlmChat:
     stream: bool = False  #: If true, use streaming API mode
 
     def __post_init__(self):
+        assert not self.tools or not self.stream  # Disable tool calling in streaming mode
         self.history = []
         self.clear_history()
         self.tokens = Tokens()
@@ -169,35 +170,49 @@ class LlmChat:
             self.history + [{"role": "assistant", "content": prefill}]
         )
         completion_args = {"tools": self.tool_schemas} if self.tool_schemas else {}
-        response = completion(
-            model=self.model,
-            messages=messages,
-            top_p=self.top_p,
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-            stream=True,
-            stream_options={"include_usage": True},
-            **completion_args
-        )
 
-        response_text = prefill
+
+        if "claude-3-5-haiku" in self.model:
+            response = completion(
+                model=self.model,
+                messages=messages,
+                top_p=self.top_p,
+                temperature=self.temperature,
+                stream=True,
+                stream_options={"include_usage": True},
+                **completion_args
+            )
+        else:
+            response = completion(
+                model=self.model,
+                messages=messages,
+                top_p=self.top_p,
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                stream=True,
+                stream_options={"include_usage": True},
+                **completion_args
+            )
+
+        yield prefill
+        chunks = []
         for chunk in response:
+            chunks.append(chunk)
             chunk_text = chunk.choices[0].delta.content
             if chunk_text:
-                response_text += chunk_text
-                yield response_text
+                yield chunk_text
 
-        response = stream_chunk_builder(response.chunks, messages=messages)
+        response = stream_chunk_builder(chunks, messages=messages)
         self.history.append(response.choices[0].message.model_dump())
         self.tokens.add(response.usage.prompt_tokens, response.usage.completion_tokens)
 
-        tool_calls = response.choices[0].message.tool_calls
-        if tool_calls:
-            response_text += self.get_tool_responses(tool_calls)
-            yield response_text
-            if tool_call_depth < self.max_tool_calls:
-                for chunk in self._call_stream(tool_call_depth=tool_call_depth + 1):
-                    yield response_text + chunk
+        # tool_calls = response.choices[0].message.tool_calls
+        # if tool_calls:
+        #     response_text += self.get_tool_responses(tool_calls)
+        #     yield response_text
+        #     if tool_call_depth < self.max_tool_calls:
+        #         for chunk in self._call_stream(tool_call_depth=tool_call_depth + 1):
+        #             yield response_text + chunk
 
     def __call__(self, prompt: str = "", prefill: str = "") -> Union[str, Generator]:
         if not self.stream:

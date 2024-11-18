@@ -108,15 +108,15 @@ class DocumentChunker:
             **kwargs
         )
 
-    def _call(self, **inputs) -> List[Dict]:
+    def _call(self, do_titles: bool = False, **inputs) -> List[Dict]:
         document = inputs["document"]
         results = self.chunker(**inputs)
         section_breaks = self.chunker.revise(**(inputs | results))["break"]
         if len(section_breaks) == 1:
-            document_title = (
-                inputs["document_title"] or
-                self.titler(text=document)["header"]
-            )
+            if do_titles:
+                document_title = inputs["document_title"] or self.titler(text=document)["header"]
+            else:
+                document_title = inputs["document_title"]
             return [{"title": document_title, "content": document}]
 
         sections = _split_document_into_sections(document, section_breaks)
@@ -131,8 +131,14 @@ class DocumentChunker:
         sections = [{"title": k, "content": v} for k, v in zip(section_headers, sections)]
         return sections
 
-    def __call__(self, document: str, document_title: str = "", do_subsections: bool = True) -> List[Dict]:
-        if not document_title:
+    def __call__(
+            self,
+            document: str,
+            document_title: str = "",
+            do_subsections: bool = False,
+            do_titles: bool = False
+    ) -> List[Dict]:
+        if do_titles and not document_title:
             print("Generating a document title...")
             document_title = self.titler(text=document)["header"]
             print(document_title)

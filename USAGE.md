@@ -185,19 +185,21 @@ This document provides examples of using the LLMPipe library for different use c
 The most basic usage is creating a prompt with a single input and output:
 
 ```python
-from llmpipe import LlmPrompt, Input, Output
+import yaml
+from llmpipe import LlmPrompt
 
-qa_prompt = LlmPrompt(
-    inputs=[Input("question", "A question to answer")],
-    outputs=[Output("answer", "A detailed answer to the question")],
-    task="Provide a clear and accurate answer to the given question."
-)
-
-# Print the generated prompt template
+qa_prompt = LlmPrompt(**yaml.safe_load("""
+task: Provide a clear and accurate answer to the given question.
+inputs:
+  - name: question
+    desc: A question to answer
+outputs:
+  - name: answer
+    desc: A detailed answer to the question
+verbose: True
+"""))
 print(qa_prompt.prompt)
-
-response = qa_prompt(question="What causes the seasons on Earth?")
-print(response["answer"])
+qa_prompt(question="What causes the seasons on Earth?")
 ```
 
 ### Adding Chain-of-Thought
@@ -205,23 +207,27 @@ print(response["answer"])
 To improve reasoning, add a thinking step:
 
 ```python
-math_solver = LlmPrompt(
-    inputs=[Input("problem", "A mathematical word problem")],
-    outputs=[
-        Output("thinking", "Show your step-by-step reasoning"),
-        Output("solution", "The final numerical answer")
-    ],
-    task="Solve the mathematical problem showing all your work.",
-    details="Make sure to break down the problem into clear steps."
-)
+import yaml
+from llmpipe import LlmPrompt
 
-response = math_solver(problem="""
+math_solver = LlmPrompt(**yaml.safe_load("""
+task: Solve the mathematical problem showing all your work.
+details: Make sure to break down the problem into clear steps.
+inputs:
+  - name: problem
+    description: A mathematical word problem
+outputs:
+  - name: thinking
+    description: Show your step-by-step reasoning
+  - name: solution
+    description: The final numerical answer
+verbose: True
+"""))
+
+math_solver(problem="""
 If a train travels at 60 mph for 2.5 hours, then increases 
 speed to 75 mph for 1.5 hours, what is the total distance covered?
 """)
-
-print("Reasoning:", response["thinking"])
-print("Answer:", response["solution"])
 ```
 
 ## Working with Evaluations
