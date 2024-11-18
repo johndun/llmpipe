@@ -53,16 +53,6 @@ def test_contains_all_missing_field():
     assert result.evaluation_result == "FAIL"
 
 
-def test_contains_all_empty_values():
-    """Test with empty values list"""
-    eval = ContainsAll(
-        field="text",
-        required_terms=[],
-    )
-    result = eval(text="Any text here")
-    assert result.evaluation_result == "PASS"
-
-
 def test_contains_all_non_string_values():
     """Test with non-string values"""
     eval = ContainsAll(

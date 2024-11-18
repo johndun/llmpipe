@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Union
 
 from ..evaluations.core import Evaluation, EvalResult
@@ -15,9 +15,14 @@ class ContainsAll(Evaluation):
         type: The type of evaluation
         label: Optional label for the evaluation
     """
-    required_terms: List[str] = field(default_factory=lambda: [])
+    required_terms: List[str] = None
     requirement: str = None
     type: str = "deterministic"
+
+    def __post_init__(self):
+        assert self.required_terms
+        if not self.requirement:
+            self.requirement = f"Must contain the following terms: " + ", ".join([str(x) for x in self.required_terms])
 
     def __call__(self, **inputs) -> EvalResult:
         """Check if field contains all required values.

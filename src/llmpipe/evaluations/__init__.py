@@ -73,6 +73,9 @@ def eval_factory(
     if type == "contains_xml":
         return ContainsXml(field=field, xml_tags=value, requirement=label)
 
+    if type == "contains_all":
+        return ContainsAll(field=field, required_terms=value, requirement=label)
+
     if type == "llm":
         return LlmEvaluation(field=field, requirement=value, **kwargs)
 
