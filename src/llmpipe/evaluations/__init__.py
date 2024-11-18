@@ -33,6 +33,7 @@ def eval_factory(
     from llmpipe.evaluations.is_in_string import IsInString
     from llmpipe.evaluations.llm_eval import LlmEvaluation
     from llmpipe.evaluations.contains_xml import ContainsXml
+    from llmpipe.evaluations.contains_one import ContainsOne
 
     if type == "max_chars":
         return MaxCharacters(field=field, max_chars=value, requirement=label)
@@ -75,6 +76,9 @@ def eval_factory(
 
     if type == "contains_all":
         return ContainsAll(field=field, required_terms=value, requirement=label)
+
+    if type == "contains_one":
+        return ContainsOne(field=field, required_terms=value, requirement=label)
 
     if type == "llm":
         return LlmEvaluation(field=field, requirement=value, **kwargs)
