@@ -11,11 +11,15 @@ class ContainsAll(Evaluation):
     Args:
         field: The field to evaluate
         value: List of values that must all be present
+        requirement: The requirement being evaluated
+        type: The type of evaluation
         label: Optional label for the evaluation
     """
 
     field: str
     value: List[str]
+    requirement: str
+    type: str
     label: str = None
 
     def __call__(self, **inputs) -> EvalResult:
