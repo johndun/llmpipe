@@ -27,6 +27,7 @@ class LlmPrompt(LlmChat):
     task: str = ""  #: The task description at the top of the prompt
     details: str = ""  #: Task details that come after the input output definition sections
     footer: str = None  #: An optional prompt footer (text for the very end of the prompt)
+    include_evals_in_prompt: bool = True  #: Whether to include evaluation requirements in the prompt
 
     def __post_init__(self):
         super().__post_init__()
@@ -76,10 +77,11 @@ class LlmPrompt(LlmChat):
         prompt.append(self.outputs_header)
         for idx, x in enumerate(self.outputs):
             prompt.append(f"{x.xml}\n{x.description}\n{x.xml_close}")
-        for x in self.outputs:
-            if x.evaluations:
-                prompt.append(f"Requirements for {x.markdown}:")
-                prompt.append("\n".join([f"- {evl.requirement}" for evl in x.evaluations]))
+        if self.include_evals_in_prompt:
+            for x in self.outputs:
+                if x.evaluations:
+                    prompt.append(f"Requirements for {x.markdown}:")
+                    prompt.append("\n".join([f"- {evl.requirement}" for evl in x.evaluations]))
 
         if self.details:
             prompt.append(self.details)
