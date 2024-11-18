@@ -24,6 +24,7 @@ class LlmPromptForMany(LlmChat):
     details: str = ""  #: Task details that come after the input output definition sections
     footer: str = None  #: An optional prompt footer (text for the very end of the prompt)
     cot_string: str = "Begin by thinking step by step"
+    include_evals_in_prompt: bool = True  #: Whether to include evaluation requirements in the prompt
 
 
     def __post_init__(self):
@@ -66,7 +67,7 @@ class LlmPromptForMany(LlmChat):
 
         prompt.append(f"{self.output.xml}\n{self.output.description}\n{self.output.xml_close}")
 
-        if self.output.evaluations:
+        if self.include_evals_in_prompt and self.output.evaluations:
             prompt.append(f"Requirements for {self.output.markdown}:")
             prompt.append("\n".join([f"- {evl.requirement}" for evl in self.output.evaluations]))
 
