@@ -19,6 +19,7 @@ class LlmPromptForMany(LlmChat):
     inputs: List[Input] = field(default_factory=lambda: [])  #: Prompt inputs
     output: Output = None  #: The output
     inputs_header: str = "You are provided the following inputs:"  #: The inputs definition section header
+    outputs_header: str = "Generate the following outputs within XML tags:"  #: The outputs definition section header
     task: str = ""  #: The task description at the top of the prompt
     details: str = ""  #: Task details that come after the input output definition sections
     footer: str = None  #: An optional prompt footer (text for the very end of the prompt)
@@ -57,7 +58,7 @@ class LlmPromptForMany(LlmChat):
         if self.task:
             prompt.append(self.task)
 
-        prompt.append("Generate the following outputs enclosed within XML tags:")
+        prompt.append(self.outputs_header)
 
         if self.cot_string:
             cot = Output("thinking", "Begin by thinking step by step")

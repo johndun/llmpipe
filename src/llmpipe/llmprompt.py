@@ -20,9 +20,10 @@ class LlmPrompt(LlmChat):
     - Any Evaluations associated with the outputs will be executed. Non-passing evaluations will be returned.
     - Non-llm evals will be run first.
     """
-    inputs: List[Input] = field(default_factory=lambda: [])  #: Prompt inputs
+    inputs: List[Input] = field(default_factory=lambda: [])  #: Prompt inputs. If not provided, will be inherited from `outputs`.
     outputs: List[Output] = field(default_factory=lambda: [])  #: Prompt outputs
     inputs_header: str = "You are provided the following inputs:"  #: The inputs definition section header
+    outputs_header: str = "Generate the following outputs within XML tags:"  #: The outputs definition section header
     task: str = ""  #: The task description at the top of the prompt
     details: str = ""  #: Task details that come after the input output definition sections
     footer: str = None  #: An optional prompt footer (text for the very end of the prompt)
@@ -72,7 +73,7 @@ class LlmPrompt(LlmChat):
         if self.task:
             prompt.append(self.task)
 
-        prompt.append("Generate the following outputs within XML tags:")
+        prompt.append(self.outputs_header)
         for idx, x in enumerate(self.outputs):
             prompt.append(f"{x.xml}\n{x.description}\n{x.xml_close}")
         for x in self.outputs:
