@@ -34,6 +34,7 @@ def eval_factory(
     from llmpipe.evaluations.llm_eval import LlmEvaluation
     from llmpipe.evaluations.contains_xml import ContainsXml
     from llmpipe.evaluations.contains_one import ContainsOne
+    from llmpipe.evaluations.contains_all import ContainsAll
 
     if type == "max_chars":
         return MaxCharacters(field=field, max_chars=value, requirement=label)
