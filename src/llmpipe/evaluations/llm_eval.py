@@ -14,6 +14,10 @@ class LlmEvaluation(Evaluation):
     inputs: List[Input] = field(default_factory=lambda: [])  #: Inputs needed to perform the evaluation
     field_description: str = ""  #: Description of the field to apply the evaluation to
 
+    @property
+    def tokens(self):
+        return self.generator.tokens
+
     def __post_init__(self, **kwargs):
         if self.inputs and not isinstance(self.inputs[0], Input):
             self.inputs = [Input(**x) for x in self.inputs]

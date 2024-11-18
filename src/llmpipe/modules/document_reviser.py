@@ -38,11 +38,13 @@ def revise_document(
         text = f.read()
     reviser = LlmPrompt(**yaml.safe_load(reviser_config.format(model=model, temperature=temperature)))
     response = reviser(document=text)
-    print(response)
-    response = reviser.revise(document=text, revised=response["revised"])
-    print(response)
+    response = response | reviser.revise(document=text, revised=response["revised"])
     with open(file, "w") as f:
         f.write(response["revised"])
+    print(f"{response['commit_message']}")
+    print(f"Tokens used: {reviser.tokens.total}")
+
+
 
 
 if __name__ == "__main__":

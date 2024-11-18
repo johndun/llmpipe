@@ -18,6 +18,14 @@ class Tokens:
     input_tokens: int = 0
     output_tokens: int = 0
 
+    def __add__(self, other):
+        return Tokens(
+            input_tokens=self.input_tokens + other.input_tokens,
+            output_tokens=self.output_tokens + other.output_tokens,
+            last_input_tokens=self.last_input_tokens,
+            last_output_tokens=self.last_output_tokens
+        )
+
     def add(self, input_tokens, output_tokens):
         self.last_input_tokens = input_tokens
         self.input_tokens += input_tokens

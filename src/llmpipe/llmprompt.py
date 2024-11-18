@@ -134,6 +134,8 @@ class LlmPrompt(LlmChat):
             evaluation_results = []
             for evaluation in deterministic_evaluations + llm_evaluations:
                 eval_result = evaluation(**(inputs | outputs))
+                if evaluation.type == "llm":
+                    self.tokens += evaluation.tokens
                 if eval_result.evaluation_result != "PASS":
                     evaluation_results.append(asdict(eval_result))
                     if break_after_first_fail:
@@ -170,6 +172,7 @@ class LlmPrompt(LlmChat):
                 eval_results_str = json.dumps(eval_result[0], indent=2)
                 logger.info(f"Revision {revision_idx + 1}: `{field.name}`")
                 revised = revisor(**inputs, evaluation_result=eval_results_str)
+                self.tokens += revisor.tokens
                 if revised[field.name].strip():
                     inputs[field.name] = revised[field.name].strip()
 
