@@ -6,15 +6,7 @@ from ..evaluations.core import Evaluation, EvalResult
 
 @dataclass
 class ContainsAll(Evaluation):
-    """Evaluates whether a field contains all specified values.
-
-    Args:
-        field: The field to evaluate
-        value: List of values that must all be present
-        requirement: The requirement being evaluated
-        type: The type of evaluation
-        label: Optional label for the evaluation
-    """
+    """Evaluates whether a field contains all specified values."""
     required_terms: List[str] = None
     requirement: str = None
     type: str = "deterministic"

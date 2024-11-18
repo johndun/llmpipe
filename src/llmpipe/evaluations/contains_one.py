@@ -6,15 +6,7 @@ from ..evaluations.core import Evaluation, EvalResult
 
 @dataclass
 class ContainsOne(Evaluation):
-    """Evaluates whether a field contains at least one of the specified values.
-
-    Args:
-        field: The field to evaluate
-        value: List of values where at least one must be present
-        requirement: The requirement being evaluated
-        type: The type of evaluation
-        label: Optional label for the evaluation
-    """
+    """Evaluates whether a field contains at least one of the specified values."""
     required_terms: List[str] = None
     requirement: str = None
     type: str = "deterministic"
