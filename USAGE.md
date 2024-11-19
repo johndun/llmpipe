@@ -457,3 +457,15 @@ print(
     (1. * len(eval_results))
 )
 ```
+
+### Address comments in a document
+
+This module selectively edits text in a file to address comments within <comment> XML tags. The module will try to revise up to 10 comments and can be repeatedly applied. Some guidelines for the comments:
+
+- Ask for localized changes
+- Comment location is a strong signal where to make edits. Put the comment right at the beginning or end of the text that needs to be edited.
+
+```bash
+echo "<comment>Write a poem about cats</comment>" > dummy.txt
+python -m llmpipe.modules.address_comments --verbose dummy.txt
+```

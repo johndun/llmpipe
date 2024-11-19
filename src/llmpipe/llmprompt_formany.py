@@ -189,7 +189,8 @@ class LlmPromptForMany(LlmChat):
         """Evaluate and revise"""
         # Iterate max_revision times or until all evaluations pass
         for revision_idx in range(max_revisions + 1):
-            print(f"Revision iteration {revision_idx + 1}")
+            if self.verbose:
+                print(f"Revision iteration {revision_idx + 1} for `{field.name}`")
             eval_results = self._evaluate(**inputs, field=field, break_after_first_fail=True)
             # Break when the output passes all evaluations
             if not eval_results:
@@ -212,4 +213,4 @@ class LlmPromptForMany(LlmChat):
             if revised[field.name].strip():
                 inputs[field.name] = revised[field.name].strip()
 
-        return inputs
+        return inputs[field.name]
