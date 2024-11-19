@@ -137,6 +137,7 @@ class LlmPrompt(LlmChat):
             llm_evaluations = []
             for evaluation in field.evaluations or []:
                 if evaluation.type == "llm":
+                    evaluation.generator.verbose = self.verbose
                     llm_evaluations.append(evaluation)
                 else:
                     deterministic_evaluations.append(evaluation)
@@ -178,6 +179,7 @@ class LlmPrompt(LlmChat):
                     details=self.details,
                     inputs=field.inputs + [field, evaluation_result],
                     outputs=[chain_of_thought, field],
+                    verbose=self.verbose,
                     **self.model_args
                 )
                 eval_results_str = json.dumps(eval_result[0], indent=2)
