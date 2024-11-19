@@ -344,41 +344,33 @@ print("Evaluation Result:", eval_result)
 A modified `LlmPromptForMany` class enables generating multiple versions/copies of the same output. The below example is terribly contrived, but illustrates using an evaluation to either filter a list of outputs or revise each item individually.
 
 ```python
-from llmpipe import Input, Output, LlmPromptForMany
+import yaml
+from llmpipe import LlmPromptForMany
 
-prompt = LlmPromptForMany(
-    output=Output(
-        "example", "An item that belongs to the category", 
-        inputs=[Input("category", "A category")]
-    ),
-    task="Generate 6 examples of things belonging to a category."
-)
-prompt_w_criteria = LlmPromptForMany(
-    inputs=[Input("category", "A category")],
-    output=Output(
-        "example", 
-        "An item that belongs to the category", 
-        evaluations=[
-            {"type": "llm", "value": "Is a calendar season"}
-        ]
-    ),
-    task="Generate examples of things belonging to a category."
-)
+prompt = LlmPromptForMany(**yaml.safe_load("""
+verbose: True
+task: Write two haikus and two limericks
+outputs:
+  - name: haiku
+    description: A haiku
+    evaluations:
+      - type: llm
+        value: Is about cats
+  - name: limerick
+    description: A limerick
+    evaluations:
+      - type: llm
+        value: Is about pirates
+include_evals_in_prompt: False
+footer: Generate two haikus in separate <haiku> XML tags, followed by two limericks in separate <limerick> XML tags.
+"""))
+print(prompt.prompt)
+results = prompt()
+print(results)
 
-# Print the generated prompt template
-print(prompt_w_criteria.prompt)
-
-results = prompt(category="Seasons")
-print("Original results: ", results)
-
-eval_results = prompt_w_criteria.evaluate(category="Seasons", **results)
-print("Evaluation results: ", eval_results)
-
-filtered_results = prompt_w_criteria.discard(category="Seasons", **results)
-print("Filtered results: ", filtered_results)
-
-revised_results = prompt_w_criteria.revise(category="Seasons", **results)
-print("Revised results: ", revised_results)
+revised_results = prompt.revise(**results)
+print(revised_results)
+print(prompt.tokens.total)
 ```
 
 ## Predefined Modules

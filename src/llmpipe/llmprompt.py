@@ -109,6 +109,7 @@ class LlmPrompt(LlmChat):
                 for chunk in self._call_stream(prompt=Template(self.prompt).format(**inputs)):
                     print(chunk, flush=True, end="")
                     response_text += chunk
+                print()
             else:
                 response_text = self._call(prompt=Template(self.prompt).format(**inputs))
             logger.info(f"LlmPrompt response: {response_text}")
