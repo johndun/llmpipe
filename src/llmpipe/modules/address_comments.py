@@ -13,7 +13,7 @@ revisor_config = """
 model: {model}
 temperature: {temperature}
 verbose: {verbose}
-task: Revise the document to address one of the comments.
+task: Revise the document to address a single comment.
 outputs:
   - name: thinking
     description: Begin by thinking step by step
@@ -42,9 +42,9 @@ details: |-
 
   To move text from one place in a document to another, use two pairs of search and replace blocks, one to delete the text from the current location and a second to add it to the target location.
 
-  An empty search block: <search></search> can be used to replace the text of the entire document without having to repeat it.
-
   One of the search-replace pairs should delete the resolved comment XML block from the document.
+
+  Comments may contain a description of the content to be added.
 footer: Generate a single <thinking> block, one or more pairs of <search> and <replace> blocks, and a single <resolved> block
 """
 
@@ -54,7 +54,8 @@ def address_comments(
     file_out: Annotated[str, Option(help="Output path. Will overwrite if not provided.")] = None,
     model: Annotated[str, Option(help="A litellm model identifier: https://docs.litellm.ai/docs/providers")] = "anthropic/claude-3-5-sonnet-20241022",
     temperature: Annotated[str, Option(help="The sampling temperature to use for generation")] = 0.,
-    verbose: Annotated[bool, Option(help="Stream output to stdout")] = False
+    verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
+    max_iters: Annotated[int, Option(help="Maximum number of iterations")] = 10
 ):
     """Address comments in a document."""
     with open(file, "r") as f:
@@ -69,7 +70,7 @@ def address_comments(
         print(reviser.prompt)
 
     idx = 0
-    while "<comment>" in text and idx < 10:
+    while "<comment>" in text and idx < max_iters:
         idx += 1
         response = reviser(document=text)
         response = response | reviser.revise(document=text, **response)

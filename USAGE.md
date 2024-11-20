@@ -467,5 +467,5 @@ This module selectively edits text in a file to address comments within <comment
 
 ```bash
 echo "<comment>Write a poem about cats</comment>" > dummy.txt
-python -m llmpipe.modules.address_comments --verbose dummy.txt
+python -m llmpipe.modules.address_comments --verbose --model bedrock/anthropic.claude-3-5-haiku-20241022-v1:0 dummy.txt
 ```
