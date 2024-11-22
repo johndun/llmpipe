@@ -138,6 +138,7 @@ class LlmPrompt(LlmChat):
             llm_evaluations = []
             for evaluation in field.evaluations or []:
                 if evaluation.type == "llm":
+                    evaluation.generator.model = self.model
                     evaluation.generator.verbose = self.verbose
                     llm_evaluations.append(evaluation)
                 else:
