@@ -3,8 +3,8 @@ Module llmpipe
 
 Sub-modules
 -----------
+* llmpipe.chunk_text
 * llmpipe.evaluations
-* llmpipe.evaluationscore
 * llmpipe.field
 * llmpipe.llmchat
 * llmpipe.llmprompt

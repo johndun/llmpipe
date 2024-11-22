@@ -56,4 +56,4 @@ Classes
     :   Field evaluations
 
     `inputs: List[llmpipe.field.Input]`
-    :   Inputs needed to generate this field
+    :   Inputs needed to evaluate this field

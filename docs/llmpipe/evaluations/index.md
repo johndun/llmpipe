@@ -3,12 +3,15 @@ Module llmpipe.evaluations
 
 Sub-modules
 -----------
+* llmpipe.evaluations.contains_all
+* llmpipe.evaluations.contains_one
 * llmpipe.evaluations.contains_xml
 * llmpipe.evaluations.core
 * llmpipe.evaluations.is_in_allow_list
 * llmpipe.evaluations.is_in_string
 * llmpipe.evaluations.llm_eval
 * llmpipe.evaluations.max_chars
+* llmpipe.evaluations.max_words
 * llmpipe.evaluations.no_blocked_terms
 * llmpipe.evaluations.no_long_words
 * llmpipe.evaluations.no_slashes

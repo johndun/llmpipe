@@ -21,3 +21,8 @@ Classes
 
     `use_cot: bool`
     :   If true, add a chain-of-thought request
+
+    ### Instance variables
+
+    `tokens`
+    :

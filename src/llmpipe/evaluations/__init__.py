@@ -24,6 +24,7 @@ def eval_factory(
 
     """
     from llmpipe.evaluations.max_chars import MaxCharacters
+    from llmpipe.evaluations.max_words import MaxWords
     from llmpipe.evaluations.no_blocked_terms import NoBlockedTerms
     from llmpipe.evaluations.no_long_words import NoLongWords
     from llmpipe.evaluations.no_slashes import NoSlashes
@@ -38,6 +39,9 @@ def eval_factory(
 
     if type == "max_chars":
         return MaxCharacters(field=field, max_chars=value, requirement=label)
+
+    if type == "max_words":
+        return MaxWords(field=field, max_words=value, requirement=label)
 
     if type == "no_square_brackets":
         return NoSlashes(field=field, requirement=label)
