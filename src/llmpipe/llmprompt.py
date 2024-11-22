@@ -178,7 +178,7 @@ class LlmPrompt(LlmChat):
                     inputs_header="You will be provided a set of inputs, along with a non-passing evaluation result.",
                     task="Your task is to generate an updated version of the field indicated in the evaluation result so that it meets all evaluation criteria and requirements.",
                     details=self.details,
-                    inputs=field.inputs + [field, evaluation_result],
+                    inputs=self.inputs + [field, evaluation_result],
                     outputs=[chain_of_thought, field],
                     verbose=self.verbose,
                     **self.model_args
