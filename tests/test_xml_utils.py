@@ -1,5 +1,5 @@
 import pytest
-from llmpipe.xml import XmlBlock, parse_text_for_tags, parse_text_for_tag, parse_text_for_one_tag
+from llmpipe.xml_utils import XmlBlock, parse_text_for_tags, parse_text_for_tag, parse_text_for_one_tag
 
 def test_xml_block_basic():
     text = "<test>content</test>"

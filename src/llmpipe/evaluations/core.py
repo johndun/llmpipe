@@ -16,6 +16,7 @@ class Evaluation:
     field: str  #: The field that the evaluation applies to
     requirement: str  #: A brief description of the requirement
     type: str  #: The evaluation type, e.g., 'deterministic' or 'llm'
+    hidden: bool = False  #: If True, hide the eval in the prompt
 
     def __call__(self, **inputs) -> EvalResult:
         raise NotImplementedError

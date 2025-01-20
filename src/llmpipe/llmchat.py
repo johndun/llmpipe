@@ -60,6 +60,7 @@ class LlmChat:
     system_prompt: str = ""  #: A system prompt (default: )
     max_tokens: int = 4096  #: The maximum number of tokens to generate (default: 4,096)
     top_p: float = 1.0  #: The cumulative probability for top-p sampling (default: 1.)
+    top_k: int = 1  #: K for top-k sampling (default: 1)
     temperature: float = 0.0  #: The sampling temperature to use for generation (default: 0.)
     tools: List[Callable] = None  #: An optional list of tools as python functions (default: None)
     max_tool_calls: int = 6  #: The maximum number of sequential tool calls (default: 6)
@@ -94,6 +95,7 @@ class LlmChat:
             "model": self.model,
             "max_tokens": self.max_tokens,
             "top_p": self.top_p,
+            "top_k": self.top_k,
             "temperature": self.temperature
         }
 
@@ -130,23 +132,15 @@ class LlmChat:
             self.history + [{"role": "assistant", "content": prefill}]
         )
         completion_args = {"tools": self.tool_schemas} if self.tool_schemas else {}
-        if "claude-3-5-haiku" in self.model:
-            response = completion(
-                model=self.model,
-                messages=messages,
-                top_p=self.top_p,
-                temperature=self.temperature,
-                **completion_args
-            )
-        else:
-            response = completion(
-                model=self.model,
-                messages=messages,
-                top_p=self.top_p,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                **completion_args
-            )
+        response = completion(
+            model=self.model,
+            messages=messages,
+            top_p=self.top_p,
+            top_k=self.top_k,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+            **completion_args
+        )
         response_text = prefill + (response.choices[0].message.content or "")
         response.choices[0].message.content = response_text
         self.history.append(response.choices[0].message.model_dump())
@@ -171,28 +165,17 @@ class LlmChat:
         )
         completion_args = {"tools": self.tool_schemas} if self.tool_schemas else {}
 
-
-        if "claude-3-5-haiku" in self.model:
-            response = completion(
-                model=self.model,
-                messages=messages,
-                top_p=self.top_p,
-                temperature=self.temperature,
-                stream=True,
-                stream_options={"include_usage": True},
-                **completion_args
-            )
-        else:
-            response = completion(
-                model=self.model,
-                messages=messages,
-                top_p=self.top_p,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                stream=True,
-                stream_options={"include_usage": True},
-                **completion_args
-            )
+        response = completion(
+            model=self.model,
+            messages=messages,
+            top_p=self.top_p,
+            top_k=self.top_k,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+            stream=True,
+            stream_options={"include_usage": True},
+            **completion_args
+        )
 
         yield prefill
         chunks = []

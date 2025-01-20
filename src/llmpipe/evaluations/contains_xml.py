@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, List
 
-from llmpipe.xml import parse_text_for_tags
+from llmpipe.xml_utils import parse_text_for_tags
 from llmpipe.evaluations.core import Evaluation, EvalResult
 
 

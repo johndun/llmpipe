@@ -55,7 +55,7 @@ def test_field_xml():
 def test_field_definition():
     """Test definition property"""
     field = Output(name="test", description="A test field")
-    assert field.definition == "test: A test field"
+    assert field.definition == "<test>\nA test field\n</test>"
 
 
 def test_field_input_template():

@@ -24,7 +24,7 @@ def yaml_prompt(
         max_revisions: Annotated[int, Option(help="Maxumim number of revisions")] = 6,
         verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
         deterministic_only: Annotated[bool, Option(help="If true, only revise for deterministic evaluations")] = False,
-        model: Annotated[str, Option(help="A LiteLLM model identifier")] = "bedrock/anthropic.claude-3-5-haiku-20241022-v1:0"
+        model: Annotated[str, Option(help="A LiteLLM model identifier")] = "claude-3-5-sonnet"
 ):
     """Load a file containing a prompt and append LLM response."""
 

@@ -10,7 +10,7 @@ def prompt(
         input_file_path: Annotated[str, Argument(help="File containing a prompt")] = None,
         output_file_path: Annotated[str, Option(help="Path to save response. If not provided, response will be appended to the input file")] = None,
         verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
-        model: Annotated[str, Option(help="A LiteLLM model identifier")] = "bedrock/anthropic.claude-3-5-haiku-20241022-v1:0"
+        model: Annotated[str, Option(help="A LiteLLM model identifier")] = "claude-3-5-sonnet"
 ):
     """Load a file containing a prompt and append LLM response."""
 

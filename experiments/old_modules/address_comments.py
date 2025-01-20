@@ -52,7 +52,7 @@ footer: Generate a single <thinking> block, one or more pairs of <search> and <r
 def address_comments(
     file: Annotated[str, Argument(help="The file to revise")],
     file_out: Annotated[str, Option(help="Output path. Will overwrite if not provided.")] = None,
-    model: Annotated[str, Option(help="A litellm model identifier: https://docs.litellm.ai/docs/providers")] = "bedrock/anthropic.claude-3-5-haiku-20241022-v1:0",
+    model: Annotated[str, Option(help="A litellm model identifier: https://docs.litellm.ai/docs/providers")] = "claude-3-5-sonnet",
     temperature: Annotated[str, Option(help="The sampling temperature to use for generation")] = 0.,
     verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
     max_iters: Annotated[int, Option(help="Maximum number of iterations")] = 10

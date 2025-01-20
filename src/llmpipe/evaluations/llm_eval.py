@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import List
 
 from llmpipe.field import Input, Output
-from llmpipe.llmprompt import LlmPrompt
+from llmpipe.prompt_module import PromptModule
 from llmpipe.evaluations.core import Evaluation, EvalResult
 
 
@@ -10,7 +10,7 @@ from llmpipe.evaluations.core import Evaluation, EvalResult
 class LlmEvaluation(Evaluation):
     """An LLM-as-a-judge evaluation"""
     type: str = "llm"
-    use_cot: bool = True  #: If true, add a chain-of-thought request
+    use_cot: bool = False  #: If true, add a chain-of-thought request
     inputs: List[Input] = field(default_factory=lambda: [])  #: Inputs needed to perform the evaluation
     field_description: str = ""  #: Description of the field to apply the evaluation to
 
@@ -19,8 +19,10 @@ class LlmEvaluation(Evaluation):
         return self.generator.tokens
 
     def __post_init__(self, **kwargs):
-        if self.inputs and not isinstance(self.inputs[0], Input):
-            self.inputs = [Input(**x) for x in self.inputs]
+        self.inputs = [
+            Input(**x) if isinstance(x, dict) else x
+            for x in self.inputs
+        ]
 
         chain_of_thought = Output("thinking", "Begin by thinking step by step")
         evaluation_result = Output(
@@ -35,9 +37,8 @@ class LlmEvaluation(Evaluation):
         )
         reason = Output("reason", "A reason for the evaluation result. Leave blank when the evaluation passes.")
 
-        self.generator = LlmPrompt(
-            inputs_header="You will be provided a set of inputs, along with an evaluation criteria that one of the inputs is expected to satisfy.",
-            task="Your task is to determine if the input meets the requirement.",
+        self.generator = PromptModule(
+            task="Determine if an input meets a requirement.",
             inputs=evaluation_result.inputs,
             outputs=(
                 [chain_of_thought, evaluation_result, reason]

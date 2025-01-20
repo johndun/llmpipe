@@ -144,7 +144,7 @@ sample = sample | code_reviewer.revise(**sample)
 ```
 
 On the other hand, defining python objects can enable re using components across multiple prompts:
-
+  
 ```python
 topic = Input("topic", "An essay topic")
 cot = Output("thinking", "Begin by thinking step by step")
@@ -171,9 +171,9 @@ revised_essay = Output(
         {"type": "max_words", "value": 500}, 
     ]
 )
-writer = LlmPrompt(inputs=[topic], outputs=[cot, essay], verbose=True)
-editor = LlmPrompt(inputs=[essay], outputs=[cot, essay_with_comments], verbose=True)
-revisor = LlmPrompt(inputs=[essay_with_comments], outputs=[cot, revised_essay], verbose=True)
+writer = PromptModule(inputs=[topic], outputs=[cot, essay], verbose=True)
+editor = PromptModule(inputs=[essay], outputs=[cot, essay_with_comments], verbose=True)
+revisor = PromptModule(inputs=[essay_with_comments], outputs=[cot, revised_essay], verbose=True)
 
 sample = {"topic": "Cellular Meiosis"}
 
