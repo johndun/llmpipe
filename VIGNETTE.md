@@ -7,7 +7,7 @@ The purpose of this vignette is to provide a tutorial for constructing prompts f
 Let's start with the basics. We define prompts in terms of Inputs and Outputs. Inputs define what the user needs to provide to the prompt in order to get an output. Just a name and a description:
 
 ```python
-from llmpipe import Input, Output, LlmPrompt
+from llmpipe import Input, Output, PromptModule, RevisorModule
 
 topic = Input("topic", "A topic for an essay")
 ```
@@ -21,16 +21,15 @@ essay = Output("essay", "An essay about a topic")
 We have, at this point, enough to define a prompt:
 
 ```python
-essay_writer = LlmPrompt(inputs=[topic], outputs=[essay], verbose=True)
-print(essay_writer.prompt)
+essay_writer = PromptModule(inputs=[topic], outputs=[essay], verbose=True)
 essay_writer(topic="Bias-variance tradeoff")
 ```
 
 Adding chain of thought is as straightforward as adding another output:
 
 ```python
-cot = Output("thinking", "Begin by thinking step by step")
-essay_writer = LlmPrompt(inputs=[topic], outputs=[cot, essay], verbose=True)
+cot = Output("thinking", "Begin by writing an outline")
+essay_writer = PromptModule(inputs=[topic], outputs=[cot, essay], verbose=True)
 print(essay_writer.prompt)
 essay_writer(topic="Bias-variance tradeoff")
 ```
@@ -40,6 +39,10 @@ essay_writer(topic="Bias-variance tradeoff")
 Outputs can have Evaluations associated with them. Define evaluations using dictionaries:
 
 ```python
+from llmpipe import Input, Output, PromptModule, RevisorModule
+
+topic = Input("topic", "A topic for an essay")
+cot = Output("thinking", "Begin by writing an outline")
 essay = Output(
     "essay", "An essay about a topic", 
     evaluations=[
@@ -48,12 +51,14 @@ essay = Output(
         {"type": "max_words", "value": 500}, 
     ]
 )
-essay_writer = LlmPrompt(inputs=[topic], outputs=[cot, essay], verbose=True)
-print(essay_writer.prompt)
+writer = PromptModule(inputs=[topic], outputs=[cot, essay], verbose=True)
+editor = RevisorModule(inputs=[topic], outputs=[cot, essay], verbose=True)
+print(writer.prompt)
 sample = {"topic": "Bias-variance tradeoff"}
 # Merge dictionaries using the "or" operator
-sample = sample | essay_writer(**sample)
-sample = sample | essay_writer.revise(**sample)
+sample = sample | writer(**sample)
+print(editor.outputs[-1].evaluations[0].generator.prompt)
+sample = sample | editor.revise(**sample)
 ```
 
 Here are some of the evaluation types you can use:
@@ -107,84 +112,4 @@ A nuance that needs to be kept in mind for LLM-based evaluations is that the inp
     "inputs": ...,  # Override the default inputs for the evaluation.
     ...  # Additional arguments passed to LiteLLM
 }
-```
-
-## Initialize Prompts with Yaml
-
-The easiest way to define a prompt is with yaml:
-
-```python
-import yaml
-code_reviewer = LlmPrompt(**yaml.safe_load("""
-verbose: True
-inputs:
-  - name: code
-    description: Python code to review
-outputs:
-  - name: thinking
-    description: Begin by thinking step by step
-  - name: review
-    description: Code review comments
-    evaluations:
-      - type: llm
-        value: Addresses code style, performance, and security
-      - type: llm
-        value: Provides specific examples for improvements
-  - name: score
-    description: Review score (1-10)
-    evaluations: 
-      - type: is_in_allow_list
-        value: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
-"""))
-print(code_reviewer.prompt)
-sample = {"code": "def example(): pass"}
-# Merge dictionaries using the "or" operator
-sample = sample | code_reviewer(**sample)
-sample = sample | code_reviewer.revise(**sample)
-```
-
-On the other hand, defining python objects can enable re using components across multiple prompts:
-  
-```python
-topic = Input("topic", "An essay topic")
-cot = Output("thinking", "Begin by thinking step by step")
-essay = Output(
-    "essay", "An essay about a topic", 
-    evaluations=[
-        {"type": "llm", "value": "Has a title"},
-        {"type": "llm", "value": "Uses markdown formatting for titles and headers"}, 
-        {"type": "max_words", "value": 500}, 
-    ]
-)
-essay_with_comments = Output(
-    "essay_with_comments", "An essay about a topic with inline comments", 
-    evaluations=[
-        {"type": "contains_xml", "value": ["comment"]}
-    ]
-)
-revised_essay = Output(
-    "revised_essay", "A revised essay that addresses all of the comments", 
-    evaluations=[
-        {"type": "not_contains", "value": ["<comment>",]},
-        {"type": "llm", "value": "Has a title"},
-        {"type": "llm", "value": "Uses markdown formatting for titles and headers"}, 
-        {"type": "max_words", "value": 500}, 
-    ]
-)
-writer = PromptModule(inputs=[topic], outputs=[cot, essay], verbose=True)
-editor = PromptModule(inputs=[essay], outputs=[cot, essay_with_comments], verbose=True)
-revisor = PromptModule(inputs=[essay_with_comments], outputs=[cot, revised_essay], verbose=True)
-
-sample = {"topic": "Cellular Meiosis"}
-
-sample = sample | writer(**sample)
-sample = sample | writer.revise(**sample)
-
-sample = sample | editor(**sample)
-sample = sample | editor.revise(**sample)
-
-sample = sample | revisor(**sample)
-sample = sample | revisor.revise(**sample)
-
-print(sample["revised_essay"])
 ```
