@@ -1,10 +1,10 @@
 # Vignette: Structured Output Generation with LLMPipe
 
-The purpose of this vignette is to provide a tutorial for constructing prompts for generating and evaluating structured outputs.
+Use `llmpipe` to define and execute prompts to generate structured outputs.
 
 ## Defining Inputs and Outputs
 
-Let's start with the basics. We define prompts in terms of Inputs and Outputs. Inputs define what the user needs to provide to the prompt in order to get an output. Just a name and a description:
+Define prompts in terms of Inputs and Outputs. Inputs define what needs to be provided to the prompt in order to get an output. Just a name and a description:
 
 ```python
 from llmpipe import Input, Output, PromptModule, RevisorModule
@@ -18,7 +18,17 @@ At its simplest, an Output is just an Input:
 essay = Output("essay", "An essay about a topic")
 ```
 
-We have, at this point, enough to define a prompt:
+There are few output class variants:
+
+```python
+from llmpipe import JsonlinesOutput, TabularOutput, JsonOutput
+```
+
+- `JsonOutput`: Outputs are passed through `json.loads(...)`
+- `JsonLinesOutput`: Outputs are loaded as a jsonlines text file and returned as a list of dictionaries
+- `TabularOutput`: Outputs are loaded as a tab-separated-values text file and returned as a list of dictionaries
+
+Defining a prompt:
 
 ```python
 essay_writer = PromptModule(inputs=[topic], outputs=[essay], verbose=True)
@@ -44,18 +54,17 @@ from llmpipe import Input, Output, PromptModule, RevisorModule
 topic = Input("topic", "A topic for an essay")
 cot = Output("thinking", "Begin by writing an outline")
 essay = Output(
-    "essay", "An essay about a topic", 
+    "essay", "An essay about a topic",
     evaluations=[
         {"type": "llm", "value": "Has a title"},
-        {"type": "llm", "value": "Uses markdown formatting for titles and headers"}, 
-        {"type": "max_words", "value": 500}, 
+        {"type": "llm", "value": "Uses markdown formatting for titles and headers"},
+        {"type": "max_words", "value": 500},
     ]
 )
 writer = PromptModule(inputs=[topic], outputs=[cot, essay], verbose=True)
 editor = RevisorModule(inputs=[topic], outputs=[cot, essay], verbose=True)
 print(writer.prompt)
 sample = {"topic": "Bias-variance tradeoff"}
-# Merge dictionaries using the "or" operator
 sample = sample | writer(**sample)
 print(editor.outputs[-1].evaluations[0].generator.prompt)
 sample = sample | editor.revise(**sample)
@@ -113,3 +122,70 @@ A nuance that needs to be kept in mind for LLM-based evaluations is that the inp
     ...  # Additional arguments passed to LiteLLM
 }
 ```
+
+## Tabular Outputs
+
+`JsonlinesOutput` and `TabularOutput` output types can be used to generate small tables of outputs (with predefined fields).
+
+Only really tested up to around 20 rows. Seems to work well with <10 rows.
+
+```python
+import json
+from itertools import chain
+
+import polars as pl
+
+from llmpipe import Input, Output, JsonlinesOutput, PromptModule, RevisorModule
+
+
+# Config
+model = "claude-3-5-sonnet-20241022"
+verbose = True
+
+# Inputs
+n = Output("n", "The number of poems to write")
+
+# Outputs
+thinking = Output("scratchpad", "An area for notes and drafting your responses")
+topic = Output("topic", "A topic")
+style = Output("style", "A poetry style")
+poem = Output(
+    "poem", "A poem",
+    inputs=[topic, style],
+    evaluations=[
+        {"type": "llm", "value": "Is a poem of the style"},
+        {"type": "llm", "value": "Incorporates the topic"}
+    ]
+)
+poem_table = JsonlinesOutput(
+    "poems", "A table of poems",
+    fields=[topic, style, poem],
+    inputs=[n],
+    evaluations=[{"type": "llm", "value": "Has `n` rows"}]
+)
+
+poet = PromptModule(
+    inputs=[n],
+    outputs=[thinking, poem_table3],
+    verbose=False,
+    model=model
+)
+# print(poet.prompt)
+# response = poet(n=5)
+# print(json.dumps(response, indent=2))
+critic = RevisorModule(
+    outputs=[topic, style, poem],
+    verbose=False,
+    model=model
+)
+
+data = {"n": [4, 4]}
+response = poet(**data, num_proc=2)
+# Flatten the lists of poems
+samples = list(chain(*response["poems"]))
+data = pl.from_dicts(samples).to_dict(as_series=False)
+data = critic(**data, num_proc=2)
+data
+```
+
+END

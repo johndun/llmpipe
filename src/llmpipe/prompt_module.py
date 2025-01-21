@@ -5,7 +5,7 @@ from typing import List, Dict
 
 from datasets import Dataset
 
-from llmpipe.field import Input, Output
+from llmpipe.field import Input, Output, output_factory
 from llmpipe.llmchat import LlmChat
 from llmpipe.template import Template
 from llmpipe.xml_utils import parse_text_for_one_tag
