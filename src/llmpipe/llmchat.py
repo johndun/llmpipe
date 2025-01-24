@@ -1,7 +1,9 @@
 import json
 import logging
 from dataclasses import dataclass
-from typing import Dict, List, Callable, Union, Generator
+from typing import Dict, List, Callable, Union, Generator, Annotated
+import yaml
+import typer
 
 from litellm import completion, ModelResponse, get_model_info, stream_chunk_builder
 from litellm.utils import function_to_dict
@@ -205,3 +207,38 @@ class LlmChat:
             return response
         else:
             return self._call_stream(prompt=prompt, prefill=prefill)
+
+
+def run_chat_prompt(
+    prompt_path: Annotated[str, typer.Argument(help="Path to a text file containing the prompt")],
+    model: Annotated[str, typer.Option(help="LiteLLM model identifier")] = "anthropic/claude-3-5-sonnet-20241022",
+    temperature: Annotated[float, typer.Option(help="Sampling temperature")] = 0.0,
+    max_tokens: Annotated[int, typer.Option(help="Maximum tokens to generate")] = 4096,
+    verbose: Annotated[bool, typer.Option(help="Stream output to stdout")] = False,
+):
+    """Run an LLM chat session with a prompt from a file"""
+    # Read prompt from file
+    with open(prompt_path, "r") as f:
+        prompt_text = f.read()
+
+    # Initialize chat with config
+    chat = LlmChat(
+        model=model,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        stream=verbose
+    )
+    
+    # Run the chat with the prompt from file
+    response = chat(prompt=prompt_text)
+    
+    if verbose:
+        print(f"\nToken usage: {chat.tokens.total}")
+    
+    print(response)
+
+
+if __name__ == "__main__":
+    app = typer.Typer(add_completion=False, pretty_exceptions_show_locals=False)
+    app.command()(run_chat_prompt)
+    app()
