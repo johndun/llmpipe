@@ -211,10 +211,10 @@ class LlmChat:
 
 def run_chat_prompt(
     prompt_path: Annotated[str, typer.Argument(help="Path to a text file containing the prompt")],
-    model: Annotated[str, typer.Option(help="LiteLLM model identifier")] = "anthropic/claude-3-5-sonnet-20241022",
+    model: Annotated[str, typer.Option(help="LiteLLM model identifier")] = "deepseek/deepseek-reasoner",
     temperature: Annotated[float, typer.Option(help="Sampling temperature")] = 0.0,
     max_tokens: Annotated[int, typer.Option(help="Maximum tokens to generate")] = 4096,
-    verbose: Annotated[bool, typer.Option(help="Stream output to stdout")] = False,
+    stream: Annotated[bool, typer.Option(help="Stream output to stdout")] = False
 ):
     """Run an LLM chat session with a prompt from a file"""
     # Read prompt from file
@@ -230,12 +230,13 @@ def run_chat_prompt(
     )
     
     # Run the chat with the prompt from file
-    response = chat(prompt=prompt_text)
-    
-    if verbose:
-        print(f"\nToken usage: {chat.tokens.total}")
-    
-    print(response)
+    if not stream:
+        response = chat(prompt=prompt_text)
+        print(response)
+    else:
+        for chunk in chat(prompt=prompt_text):
+            print(chunk, flush=True, end="")
+        print()
 
 
 if __name__ == "__main__":
