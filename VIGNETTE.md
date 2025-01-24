@@ -139,7 +139,7 @@ from llmpipe import Input, Output, JsonlinesOutput, PromptModule, RevisorModule
 
 
 # Config
-model = "claude-3-5-sonnet-20241022"
+model = "hosted_vllm//home/ubuntu/models/deepseek"
 verbose = True
 
 # Inputs
@@ -166,11 +166,12 @@ poem_table = JsonlinesOutput(
 
 poet = PromptModule(
     inputs=[n],
-    outputs=[thinking, poem_table3],
+    outputs=[poem_table],
     verbose=False,
     model=model
 )
-# print(poet.prompt)
+print(poet.prompt)
+
 # response = poet(n=5)
 # print(json.dumps(response, indent=2))
 critic = RevisorModule(
@@ -179,8 +180,8 @@ critic = RevisorModule(
     model=model
 )
 
-data = {"n": [4, 4]}
-response = poet(**data, num_proc=2)
+data = {"n": 8 * [4]}
+response = poet(**data, num_proc=8)
 # Flatten the lists of poems
 samples = list(chain(*response["poems"]))
 data = pl.from_dicts(samples).to_dict(as_series=False)

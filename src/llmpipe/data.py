@@ -42,11 +42,11 @@ def write_data(samples: List[Dict], path: str):
         path: Path to the data file
     """
     if path.endswith(".jsonl"):
-        pl.from_dicts(samples).write_ndjson(path)
+        pl.from_dicts(samples, infer_schema_length=100000).write_ndjson(path)
     elif path.endswith(".txt"):
-        pl.from_dicts(samples).write_csv(path, separator="\t")
+        pl.from_dicts(samples, infer_schema_length=100000).write_csv(path, separator="\t")
     elif path.endswith(".csv"):
-        pl.from_dicts(samples).write_csv(path)
+        pl.from_dicts(samples, infer_schema_length=100000).write_csv(path)
     else:
         raise ValueError("Unsupported file type, try .txt (tab-separated), .csv (comma-separated), or .jsonl (json lines)")
 

@@ -1,10 +1,15 @@
 import json
 import logging
+import yaml
 from dataclasses import dataclass, field, asdict
-from typing import List, Dict
+from typing import Annotated, List, Dict
 
+import typer
+import polars as pl
 from datasets import Dataset
+from typer import Option, Argument
 
+from llmpipe.data import read_data, write_data
 from llmpipe.field import Input, Output, output_factory
 from llmpipe.llmchat import LlmChat
 from llmpipe.template import Template
@@ -123,3 +128,47 @@ class PromptModule(LlmChat):
                 batched=False
             )
         ).to_dict()
+
+
+def run_yaml_prompt(
+        prompt_path: Annotated[str, Option(help="Path to a yaml file containing the prompt configuration")] = None,
+        input_data_path: Annotated[str, Option(help="Dataset to run prompt on")] = None,
+        output_data_path: Annotated[str, Option(help="Path to save processed dataset")] = None,
+        num_proc: Annotated[int, Option(help="Number of processes to use is dataset mode")] = 1,
+        n_samples: Annotated[int, Option(help="Optional maximum number of samples to run")] = None,
+        verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
+        model: Annotated[str, Option(help="A LiteLLM model identifier")] = None
+):
+    """Run a prompt on a dataset."""
+
+    # Read the prompt
+    with open(prompt_path, "r") as f:
+        prompt_config = yaml.safe_load(f.read())
+
+    # Initialize the prompt
+    prompt_config["model"] = model
+    prompt_config["verbose"] = verbose
+    prompt = PromptModule(**prompt_config)
+    if verbose:
+        print(prompt.prompt)
+
+    # Read the data
+    samples = read_data(input_data_path)
+
+    # Sample if requested
+    if n_samples is not None:
+        n_samples = min(n_samples, len(samples))
+        samples = random.sample(samples, n_samples)
+
+    # Run prompt and return results
+    data = pl.from_dicts(samples).to_dict(as_series=False)
+    samples = pl.from_dict(prompt(**data, num_proc=num_proc)).to_dicts()
+
+    # Write the output to the target output file location
+    write_data(samples, output_data_path)
+
+
+if __name__ == "__main__":
+    app = typer.Typer(add_completion=False, pretty_exceptions_show_locals=False)
+    app.command()(run_yaml_prompt)
+    app()
