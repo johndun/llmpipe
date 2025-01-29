@@ -4,3 +4,5 @@ from .llmchat import LlmChat
 from .prompt_module import PromptModule
 from .revisor_module import RevisorModule
 from .evaluations import Evaluation, eval_factory
+from .llmprompt import LlmPrompt
+from .llmprompt_formany import LlmPromptForMany
