@@ -138,7 +138,7 @@ class LlmChat:
             model=self.model,
             messages=messages,
             top_p=self.top_p,
-            top_k=self.top_k,
+            # top_k=self.top_k,
             temperature=self.temperature,
             max_tokens=self.max_tokens,
             **completion_args
@@ -171,7 +171,7 @@ class LlmChat:
             model=self.model,
             messages=messages,
             top_p=self.top_p,
-            top_k=self.top_k,
+            # top_k=self.top_k,
             temperature=self.temperature,
             max_tokens=self.max_tokens,
             stream=True,
@@ -211,7 +211,7 @@ class LlmChat:
 
 def run_chat_prompt(
     prompt_path: Annotated[str, typer.Argument(help="Path to a text file containing the prompt")],
-    model: Annotated[str, typer.Option(help="LiteLLM model identifier")] = "deepseek/deepseek-reasoner",
+    model: Annotated[str, typer.Option(help="LiteLLM model identifier")] = "claude-3-5-sonnet-20241022",
     temperature: Annotated[float, typer.Option(help="Sampling temperature")] = 0.0,
     max_tokens: Annotated[int, typer.Option(help="Maximum tokens to generate")] = 4096,
     stream: Annotated[bool, typer.Option(help="Stream output to stdout")] = False
@@ -228,7 +228,7 @@ def run_chat_prompt(
         max_tokens=max_tokens,
         stream=stream
     )
-    
+
     # Run the chat with the prompt from file
     if not stream:
         response = chat(prompt=prompt_text)

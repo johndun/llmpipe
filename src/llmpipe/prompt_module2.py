@@ -26,8 +26,9 @@ class PromptModule2(LlmChat):
     task: str = "" #: The task description at the top of the prompt
     outputs: List[Output] = field(default_factory=lambda: [])  #: Prompt outputs
     inputs: List[Input] = field(default_factory=lambda: [])  #: Prompt inputs.
-    outputs_header: str = "Generate the following outputs:"  #: The outputs definition section header
+    outputs_header: str = "Generate the following outputs enclosed within XML tags:"  #: The outputs definition section header
     verbose: bool = False  #: If true, print additional LLM output to stdout
+    footer: str = None  #: An optional prompt footer (text for the very end of the prompt)
 
     def __post_init__(self):
         super().__post_init__()
@@ -43,6 +44,19 @@ class PromptModule2(LlmChat):
             for x in self.inputs
         ]
 
+        if self.footer is None:
+            if len(self.outputs) == 0:
+                self.footer = ""
+            elif len(self.outputs) > 2:
+                inline = ", ".join([f"{x.xml}...{x.xml_close}" for x in self.outputs])
+                self.footer = f"Generate the required outputs within XML tags: {inline}"
+            elif len(self.outputs) == 2:
+                inline = " and ".join([f"{x.xml}...{x.xml_close}" for x in self.outputs])
+                self.footer = f"Generate the required outputs within XML tags: {inline}"
+            else:
+                inline = f"{self.outputs[0].xml}...{self.outputs[0].xml_close}"
+                self.footer = f"Generate the required output within XML tags: {inline}"
+
     @property
     def prompt(self) -> str:
         """Returns a prompt for generating the output"""
@@ -55,6 +69,8 @@ class PromptModule2(LlmChat):
         prompt.append(self.outputs_header)
         for x in self.outputs:
             prompt.append(x.definition)
+
+        prompt.append(self.footer)
 
         return "\n\n".join(prompt)
 
