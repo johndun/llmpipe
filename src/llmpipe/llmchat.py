@@ -8,6 +8,7 @@ import typer
 from litellm import completion, ModelResponse, get_model_info, stream_chunk_builder
 from litellm.utils import function_to_dict
 
+from llmpipe.constants import DEFAULT_MODEL
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ class LlmChat:
     print(chat.tokens.total)
     ```
     """
-    model: str = "claude-3-5-sonnet-20241022"  #: A litellm model identifier: https://docs.litellm.ai/docs/providers
+    model: str = DEFAULT_MODEL  #: A litellm model identifier: https://docs.litellm.ai/docs/providers
     system_prompt: str = ""  #: A system prompt (default: )
     max_tokens: int = 4096  #: The maximum number of tokens to generate (default: 4,096)
     top_p: float = 1.0  #: The cumulative probability for top-p sampling (default: 1.)
@@ -97,7 +98,7 @@ class LlmChat:
             "model": self.model,
             "max_tokens": self.max_tokens,
             "top_p": self.top_p,
-            "top_k": self.top_k,
+            # "top_k": self.top_k,
             "temperature": self.temperature
         }
 
@@ -211,7 +212,7 @@ class LlmChat:
 
 def run_chat_prompt(
     prompt_path: Annotated[str, typer.Argument(help="Path to a text file containing the prompt")],
-    model: Annotated[str, typer.Option(help="LiteLLM model identifier")] = "claude-3-5-sonnet-20241022",
+    model: Annotated[str, typer.Option(help="LiteLLM model identifier")] = DEFAULT_MODEL,
     temperature: Annotated[float, typer.Option(help="Sampling temperature")] = 0.0,
     max_tokens: Annotated[int, typer.Option(help="Maximum tokens to generate")] = 4096,
     stream: Annotated[bool, typer.Option(help="Stream output to stdout")] = False

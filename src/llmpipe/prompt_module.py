@@ -14,6 +14,7 @@ from llmpipe.field import Input, Output, output_factory
 from llmpipe.llmchat import LlmChat
 from llmpipe.template import Template
 from llmpipe.xml_utils import parse_text_for_one_tag
+from llmpipe.constants import DEFAULT_MODEL
 
 
 logger = logging.getLogger(__name__)
@@ -23,59 +24,54 @@ logger = logging.getLogger(__name__)
 class PromptModule(LlmChat):
     """An LLM prompt class
     """
-    inputs: List[Input] = field(default_factory=lambda: [])  #: Prompt inputs. If not provided, will be inherited from `outputs`.
+    task: str = "" #: The task description at the top of the prompt
     outputs: List[Output] = field(default_factory=lambda: [])  #: Prompt outputs
-    inputs_header: str = "You will be provided the following inputs:"  #: The inputs definition section header
-    outputs_header: str = "Generate the following outputs within XML tags:"  #: The outputs definition section header
-    task: str = ""  #: The task description at the top of the prompt
-    details: str = ""  #: Task details that come after the input output definition sections
+    inputs: List[Input] = field(default_factory=lambda: [])  #: Prompt inputs.
+    outputs_header: str = "Generate the following outputs enclosed within XML tags:"  #: The outputs definition section header
     verbose: bool = False  #: If true, print additional LLM output to stdout
+    footer: str = None  #: An optional prompt footer (text for the very end of the prompt)
 
     def __post_init__(self):
         super().__post_init__()
+        assert self.task and self.outputs
         # Initialize output classes when dictionary is provided
         self.outputs = [
             output_factory(**x) if isinstance(x, dict) else x
             for x in self.outputs
         ]
-        # Infer inputs from the outputs when not inputs are not defined
-        if not self.inputs:
-            inputs = {}
-            for output in self.outputs:
-                for inp in output.inputs:
-                    inputs[inp.name] = inp
-            self.inputs = list(inputs.values())
         # Initialize input classes when dictionary is provided
         self.inputs = [
             Input(**x) if isinstance(x, dict) else x
             for x in self.inputs
         ]
 
+        if self.footer is None:
+            if len(self.outputs) == 0:
+                self.footer = ""
+            elif len(self.outputs) > 2:
+                inline = ", ".join([f"{x.xml}...{x.xml_close}" for x in self.outputs])
+                self.footer = f"Generate the required outputs within XML tags: {inline}"
+            elif len(self.outputs) == 2:
+                inline = " and ".join([f"{x.xml}...{x.xml_close}" for x in self.outputs])
+                self.footer = f"Generate the required outputs within XML tags: {inline}"
+            else:
+                inline = f"{self.outputs[0].xml}...{self.outputs[0].xml_close}"
+                self.footer = f"Generate the required output within XML tags: {inline}"
+
     @property
     def prompt(self) -> str:
         """Returns a prompt for generating the output"""
-        prompt = ["## Task Description"]
-
-        if self.task:
-            prompt.append(self.task)
+        prompt = [self.task]
 
         if self.inputs:
-            prompt.append(self.inputs_header)
             for x in self.inputs:
-                prompt.append(x.definition)
+                prompt.append(x.input_template)
 
         prompt.append(self.outputs_header)
         for x in self.outputs:
             prompt.append(x.definition)
 
-        if self.details:
-            prompt.append("### Details")
-            prompt.append(self.details)
-
-        if self.inputs:
-            prompt.append("## Inputs")
-            for x in self.inputs:
-                prompt.append(x.input_template)
+        prompt.append(self.footer)
 
         return "\n\n".join(prompt)
 
@@ -86,14 +82,16 @@ class PromptModule(LlmChat):
         self.clear_history()
 
         try:
+            prompt = Template(self.prompt).format(**inputs)
             if self.verbose:
+                print(prompt)
                 response_text = ""
-                for chunk in self._call_stream(prompt=Template(self.prompt).format(**inputs)):
+                for chunk in self._call_stream(prompt=prompt):
                     print(chunk, flush=True, end="")
                     response_text += chunk
                 print()
             else:
-                response_text = self._call(prompt=Template(self.prompt).format(**inputs))
+                response_text = self._call(prompt=prompt)
             logger.info(f"PromptModule response: {response_text}")
             logger.info(f"Token counts - Last: {self.tokens.last}, Total: {self.tokens.total}")
         except Exception as e:
@@ -137,7 +135,7 @@ def run_yaml_prompt(
         num_proc: Annotated[int, Option(help="Number of processes to use is dataset mode")] = 1,
         n_samples: Annotated[int, Option(help="Optional maximum number of samples to run")] = None,
         verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
-        model: Annotated[str, Option(help="A LiteLLM model identifier")] = None
+        model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL
 ):
     """Run a prompt on a dataset."""
 
@@ -148,7 +146,7 @@ def run_yaml_prompt(
     # Initialize the prompt
     prompt_config["model"] = model
     prompt_config["verbose"] = verbose
-    prompt = PromptModule(**prompt_config)
+    prompt = PromptModule2(**prompt_config)
     if verbose:
         print(prompt.prompt)
 

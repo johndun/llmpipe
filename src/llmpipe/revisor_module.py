@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RevisorModule(PromptModule):
     """An LLM prompt class"""
+    task: str = "Revise an output"
 
     def __call__(self, num_proc: int = 1, **inputs) -> Dict:
         if not isinstance(list(inputs.values())[0], list):
@@ -81,7 +82,6 @@ class RevisorModule(PromptModule):
                 evaluation_result = Input("evaluation_result", "An evaluation result")
                 revisor = PromptModule(
                     task="Your task is to generate an updated version of the field indicated in the evaluation result so that it meets all evaluation criteria and requirements.",
-                    details=self.details,
                     inputs=self.inputs + [field, evaluation_result],
                     outputs=[chain_of_thought, field],
                     verbose=self.verbose,

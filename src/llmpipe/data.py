@@ -8,7 +8,7 @@ import polars as pl
 
 
 def read_data(path: str, as_df: bool = False, **kwargs) -> List[Dict]:
-    """Reads tab separated (with header, .txt) or json lines (.jsonl) data from disk.
+    """Reads comma or tab separated (with header, .csv, .txt) or json lines (.jsonl) data from disk.
 
     Args:
         path: Path to the data file
@@ -35,7 +35,7 @@ def read_data(path: str, as_df: bool = False, **kwargs) -> List[Dict]:
 
 
 def write_data(samples: List[Dict], path: str):
-    """Writes data as tab separated (with header, .txt) or json lines (.jsonl) to disk.
+    """Writes data as comma or tab separated (with header, .csv, .txt) or json lines (.jsonl) to disk.
 
     Args:
         samples: Data records/samples as a list of dictionaries
