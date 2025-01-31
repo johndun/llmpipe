@@ -6,9 +6,15 @@ authors = [
     {name = "John Dunavent", email = "dunavent.jm@gmail.com"},
 ]
 dependencies = [
-    "litellm>=1.52",
-    "typer>=0.13",
-    "numpydoc>=1.8"
+    "litellm>=1.58.2",
+    "typer>=0.15.1",
+    "numpydoc>=1.8",
+    "datasets",
+    "aider-chat>=0.72.3",
+    "polars>=1.21.0",
+    "GitPython>=3.1.44",
+    "torch>=2.2.2",
+    "transformers"
 ]
 requires-python = ">=3.10"
 
@@ -16,13 +22,11 @@ requires-python = ">=3.10"
 dev = [
     "pytest>=8.3",
     "ipython",
-    "polars>=1.12",
     "nb-clean>=3.3.0",
     "pytest-cov>=2.0",
     "pdoc3>=0.11",
     "jupyter>=1.1.1",
-    "boto3>=1.35",
-    "datasets>=3.1"
+    "boto3>=1.35"
 ]
 
 [build-system]
