@@ -89,15 +89,21 @@ data_samples:
 
 
 def write_script(
-    task: Annotated[str, Option(help="Task")],
+    task: Annotated[str, Option(help="Task (ignored if task_file is provided)")],
     repo_path: Annotated[str, Option(help="Working directory")],
     data_path: Annotated[str, Option(help="Dataset path")],
     script_name: Annotated[str, Option(help="Script name (with .py extension)")] = None,
+    task_file: Annotated[str, Option(help="Optional file containing task description")] = None,
     model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL,
     verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
     max_revisions: Annotated[int, Option(help="Maximum number of revisions")] = 0
 ):
     """Generate detailed requirements for a data science EDA task using an LLM."""
+    # Read task from file if specified
+    if task_file:
+        with open(task_file, "r") as f:
+            task = f.read()
+
     # Read the schema
     with open(f"{repo_path}/data_schema.md", "r") as f:
         schema = f.read()
