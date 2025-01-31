@@ -69,6 +69,7 @@ Guidelines:
 - Follow any implementation patterns provided to you in read-only _template.py files.
 - Make sure to: `os.makedirs(output_basepath, exist_ok=True)`
 - Only base python3.10 packages, along with pandas, scipy, nltk, numpy, matplotlib, and seaborn may be used.
+- Only create charts, graphs, or other data artifaccts when explicitly asked to. Print the outputs needed by the task.
 
 <task>
 {task}
