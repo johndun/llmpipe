@@ -24,8 +24,8 @@ def initialize_repo(
     # Create fresh directory
     output_path.mkdir(parents=True)
     
-    # Create logs subdirectory
-    (output_path / "logs").mkdir()
+    # Create artifacts subdirectory
+    (output_path / "artifacts").mkdir()
 
     # Create notes subdirectory
     (output_path / "notes").mkdir()
