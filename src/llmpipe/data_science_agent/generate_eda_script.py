@@ -117,7 +117,10 @@ def generate_eda_script(
     )
 
     # Run the script and write the output to a log file
-    log_path = "logs/" + script_name[:-3] + ".log"
+    script_name_stem = script_name[:-3]
+    log_dir = os.path.join("artifacts", script_name_stem)
+    log_path = os.path.join(log_dir, "output.log")
+    os.makedirs(log_dir, exist_ok=True)
     run_command(f"python {script_name} --data-path {data_path} > {log_path} 2>&1", repo_path)
 
     # Debug and revise
@@ -131,7 +134,8 @@ def generate_eda_script(
         if new_git_hash == last_git_hash:
             bugfree = True
         else:
-            with open(f"{repo_path}/{log_path}", "w") as f:
+            os.makedirs(os.path.join(repo_path, log_dir), exist_ok=True)
+            with open(os.path.join(repo_path, log_path), "w") as f:
                 f.write(f"{task}\n\n")
             run_command(f"python {script_name} --data-path {data_path} >> {log_path} 2>&1", repo_path)
             last_git_hash = new_git_hash
