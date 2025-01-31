@@ -22,7 +22,7 @@ def generate_data_schema(
         data_sample = f.read()
 
     module = PromptModule(
-        task="Generate a markdown table containing a dataset schema. Columns should include name, type, and description.",
+        task="Generate a markdown table containing a dataset schema. Columns should include name, type, and description. Make sure to enclose the table in XML tags.",
         inputs=[
             Input("data_samples", "A small set of examples from a dataset"),
         ],
@@ -38,7 +38,6 @@ def generate_data_schema(
     # Save schema if output path provided
     if output_path:
         with open(output_path, "w") as f:
-            f.write("The data schema:\n\n")
             f.write(response["data_schema"])
         print(f"\nSaved schema to {output_path}")
     else:

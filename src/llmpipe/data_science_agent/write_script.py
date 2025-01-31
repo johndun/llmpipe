@@ -7,7 +7,7 @@ import git
 import typer
 from typer import Option
 
-from llmpipe.data_science_agent.summarize_eda_output import summarize_eda_output
+from llmpipe.data_science_agent.summarize_script_output import summarize_script_output
 from llmpipe.field import Input, Output
 from llmpipe.prompt_module import PromptModule
 from llmpipe.constants import DEFAULT_MODEL
@@ -45,12 +45,30 @@ def run_aider(
         message_file (str): Message to send to aider.
         working_dir (str): The directory to run the command in.
     """
-    command_str = f"""aider --no-analytics --no-show-model-warnings --stream --model {model} --message-file {message_file} --yes --read cli_script_template.py --read data_io_template.py {script_path}"""
+    command_str = f"""aider --map-tokens 500 --no-analytics --no-show-model-warnings --stream --model {model} --message-file {message_file} --yes --read cli_script_template.py --read data_io_template.py {script_path}"""
     run_command(command_str, working_dir)
 
 
 AIDER_MESSAGE_TEMPLATE = """\
-Write an exploratory data analysis (EDA) python script to complete a task. EDA scripts should only print outputs (to be used to inform future analyses and/or write research summary documents). Printed outputs should be clearly labeled. Script should input a single dataset (schema defined below, no default). Script may have additional command line arguments, but these should all have defaults. Only base python3.10 packages, along with pandas, scipy, nltk, and numpy may be used. Be sure to use typer for CLI args and the read_data and write_data llmpipe functions for data IO.
+Write a python script to complete a task.
+
+Script inputs:
+
+- data-path: Script should input a single dataset (schema defined below, no default).
+- output-basepath: Directory in which to save script outputs, such as graph images. Defaults to artifacts/{script_name}
+- Script may have additional command line arguments. These should all have defaults.
+
+Outputs:
+
+- Printed outputs should be clearly labeled.
+- If the task requires creating charts or graphs, they should be created in `output_basepath`.
+- Artifacts should have fixed filenames. DO NOT use timestamps in artifact file names.
+
+Guidelines:
+
+- Follow any implementation patterns provided to you in read-only _template.py files.
+- Make sure to: `os.makedirs(output_basepath, exist_ok=True)`
+- Only base python3.10 packages, along with pandas, scipy, nltk, numpy, matplotlib, and seaborn may be used.
 
 <task>
 {task}
@@ -69,10 +87,11 @@ data_samples:
 """
 
 
-def generate_eda_script(
+def write_script(
     task: Annotated[str, Option(help="Task")],
     repo_path: Annotated[str, Option(help="Working directory")],
     data_path: Annotated[str, Option(help="Dataset path")],
+    script_name: Annotated[str, Option(help="Script name (with .py extension)")] = None,
     model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL,
     verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
     max_revisions: Annotated[int, Option(help="Maximum number of revisions")] = 0
@@ -87,14 +106,17 @@ def generate_eda_script(
         data_samples = f.read()
 
     # Generate a script name
-    script_name_module = PromptModule(
-        task="Given a data science task, generate a python script name (with .py extension).",
-        inputs=[Input("task", "A data science task")],
-        outputs=[Output("script_name", "Python script name")],
-        model=model,
-        verbose=verbose
-    )
-    script_name = script_name_module(task=task)["script_name"]
+    if not script_name:
+        script_name_module = PromptModule(
+            task="Given a data science task, generate a python script name (with .py extension).",
+            inputs=[Input("task", "A data science task")],
+            outputs=[Output("script_name", "Python script name")],
+            model=model,
+            verbose=verbose
+        )
+        script_name = script_name_module(task=task)["script_name"]
+
+    assert script_name
 
     # Write the script
     message = AIDER_MESSAGE_TEMPLATE.format(
@@ -137,7 +159,7 @@ def generate_eda_script(
     n_tries = 0
     bugfree = False
     while not bugfree and n_tries < max_revisions:
-        bugfix_cmd = f"aider --no-analytics --no-show-model-warnings --stream --model {model} --message \"Review the script outputs and fix any bugs. Do not make efficiency or minor formatting changes. Do not address warnings.\" --yes --read {log_path_rel} {script_name} data_schema.md"
+        bugfix_cmd = f"aider --map-tokens 500 --no-analytics --no-show-model-warnings --stream --model {model} --message \"Review the script outputs and fix errors encountered. Do not make efficiency or minor formatting changes. Do not address warnings.\" --yes --read {log_path_rel} {script_name} data_schema.md"
         run_command(bugfix_cmd, repo_path)
         new_git_hash = git.Repo(repo_path).head.commit.hexsha
         if new_git_hash == last_git_hash:
@@ -147,9 +169,9 @@ def generate_eda_script(
             last_git_hash = new_git_hash
             n_tries += 1
 
-    summarize_eda_output(
+    summarize_script_output(
         repo_path=repo_path,
-        script_name=script_name[:-3],
+        script_name=script_name,
         model=model,
         verbose=verbose
     )
@@ -157,5 +179,5 @@ def generate_eda_script(
 
 if __name__ == "__main__":
     app = typer.Typer(add_completion=False, pretty_exceptions_show_locals=False)
-    app.command()(generate_eda_script)
+    app.command()(write_script)
     app()
