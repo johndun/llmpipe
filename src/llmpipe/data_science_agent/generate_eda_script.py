@@ -50,7 +50,7 @@ def run_aider(
 
 
 AIDER_MESSAGE_TEMPLATE = """\
-Write an exploratory data analysis (EDA) python script to complete a task. EDA scripts should only print outputs (to be used to inform future analyses and/or write research summary documents). Printed outputs should be clearly labeled. Script should input a single dataset (schema defined below, no default). Script may have additional command line arguments, but these should all have defaults. Only base python3.10 packages, along with pandas, scipy, nltk, and numpy may be used.
+Write an exploratory data analysis (EDA) python script to complete a task. EDA scripts should only print outputs (to be used to inform future analyses and/or write research summary documents). Printed outputs should be clearly labeled. Script should input a single dataset (schema defined below, no default). Script may have additional command line arguments, but these should all have defaults. Only base python3.10 packages, along with pandas, scipy, nltk, and numpy may be used. Be sure to use typer for CLI args and the read_data and write_data llmpipe functions for data IO.
 
 <task>
 {task}
@@ -118,35 +118,32 @@ def generate_eda_script(
 
     # Run the script and write the output to a log file
     script_name_stem = script_name[:-3]
-    log_dir = os.path.join("artifacts", script_name_stem)
+    log_dir = os.path.join(repo_path, "artifacts", script_name_stem)
     log_path = os.path.join(log_dir, "output.log")
     task_path = os.path.join(log_dir, "task.md")
+    log_path_rel = os.path.join("artifacts", script_name_stem, "output.log")
+
     os.makedirs(log_dir, exist_ok=True)
     
     # Write task to task.md
     with open(task_path, "w") as f:
         f.write(task)
     
-    # Write task and run script to output.log
-    with open(log_path, "w") as f:
-        f.write(f"{task}\n\n")
-    run_command(f"python {script_name} --data-path {data_path} >> {log_path} 2>&1", repo_path)
+    # Run script and write output to artifacts/scriptname/output.log
+    run_command(f"python {script_name} --data-path {data_path} > {log_path_rel} 2>&1", repo_path)
 
     # Debug and revise
     last_git_hash = git.Repo(repo_path).head.commit.hexsha
     n_tries = 0
     bugfree = False
     while not bugfree and n_tries < max_revisions:
-        bugfix_cmd = f"aider --no-analytics --no-show-model-warnings --stream --model {model} --message \"Review the script outputs and fix any bugs or issues. Do not make efficiency or minor formatting changes.\" --yes --read {log_path} {script_name} data_schema.md"
+        bugfix_cmd = f"aider --no-analytics --no-show-model-warnings --stream --model {model} --message \"Review the script outputs and fix any bugs. Do not make efficiency or minor formatting changes. Do not address warnings.\" --yes --read {log_path_rel} {script_name} data_schema.md"
         run_command(bugfix_cmd, repo_path)
         new_git_hash = git.Repo(repo_path).head.commit.hexsha
         if new_git_hash == last_git_hash:
             bugfree = True
         else:
-            os.makedirs(os.path.join(repo_path, log_dir), exist_ok=True)
-            with open(os.path.join(repo_path, log_path), "w") as f:
-                f.write(f"{task}\n\n")
-            run_command(f"python {script_name} --data-path {data_path} >> {log_path} 2>&1", repo_path)
+            run_command(f"python {script_name} --data-path {data_path} > {log_path_rel} 2>&1", repo_path)
             last_git_hash = new_git_hash
             n_tries += 1
 

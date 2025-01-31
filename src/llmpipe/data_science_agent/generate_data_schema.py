@@ -22,13 +22,13 @@ def generate_data_schema(
         data_sample = f.read()
 
     module = PromptModule(
-        task="Generate a schema for a dataset as a markdown table. Columns should include name, type, and description.",
+        task="Generate a markdown table containing a dataset schema. Columns should include name, type, and description.",
         inputs=[
             Input("data_samples", "A small set of examples from a dataset"),
         ],
         outputs=[
             Output("thinking", "Begin by thinking step by step"),
-            Output("data_schema", "The data schema as a markdown table")
+            Output("data_schema", "The data schema (no code block)")
         ],
         model=model,
         verbose=verbose

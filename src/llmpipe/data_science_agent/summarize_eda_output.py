@@ -18,7 +18,7 @@ def summarize_eda_output(
 ):
     """Draft document text using EDA results."""
     # Read the data
-    with open(f"{repo_path}/logs/{script_name}.log", "r") as f:
+    with open(f"{repo_path}/artifacts/{script_name}/output.log", "r") as f:
         eda_results = f.read()
     with open(f"{repo_path}/data_schema.md", "r") as f:
         data_schema = f.read()

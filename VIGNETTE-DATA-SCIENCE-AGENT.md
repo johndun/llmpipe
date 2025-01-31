@@ -18,7 +18,7 @@ python -m llmpipe.data_science_agent.generate_eda_script \
     --repo-path ~/test_repo \
     --data-path ~/Work/llmpipe/resources/dummy_data.jsonl \
     --task "Generate univariate summary statistics. Include missing value counts. Include distinct value counts. Include a table of frequency counts for fields with fewer than 20 distinct values." \
-    --max-revisions 3 \
+    --max-revisions 2 \
     --verbose
 ```
 
@@ -28,6 +28,6 @@ Generate a follow up based on reading the data analysis summaries in the repo:
 python -m llmpipe.data_science_agent.generate_followup \
     --repo-path ~/test_repo \
     --data-path ~/Work/llmpipe/resources/dummy_data.jsonl \
-    --max-revisions 3 \
+    --max-revisions 2 \
     --verbose
 ```
