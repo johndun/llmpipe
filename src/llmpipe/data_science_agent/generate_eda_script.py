@@ -120,8 +120,17 @@ def generate_eda_script(
     script_name_stem = script_name[:-3]
     log_dir = os.path.join("artifacts", script_name_stem)
     log_path = os.path.join(log_dir, "output.log")
+    task_path = os.path.join(log_dir, "task.md")
     os.makedirs(log_dir, exist_ok=True)
-    run_command(f"python {script_name} --data-path {data_path} > {log_path} 2>&1", repo_path)
+    
+    # Write task to task.md
+    with open(task_path, "w") as f:
+        f.write(task)
+    
+    # Write task and run script to output.log
+    with open(log_path, "w") as f:
+        f.write(f"{task}\n\n")
+    run_command(f"python {script_name} --data-path {data_path} >> {log_path} 2>&1", repo_path)
 
     # Debug and revise
     last_git_hash = git.Repo(repo_path).head.commit.hexsha
