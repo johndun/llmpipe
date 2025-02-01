@@ -14,27 +14,19 @@ def generate_data_schema(
     data_sample_path: Annotated[str, Option(help="Path to dataset samples")],
     output_path: Annotated[str, Option(help="Path to save the schema")] = None,
     model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL,
-    verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
-    use_cot: Annotated[bool, Option(help="Use chain of thought prompting")] = True
+    verbose: Annotated[bool, Option(help="Stream output to stdout")] = False
 ):
     """Print random samples from a dataset with truncated long values."""
     # Read the data
     with open(data_sample_path, "r") as f:
         data_sample = f.read()
 
-    outputs=[
-        Output("thinking", "Begin by thinking step by step"),
-        Output("data_schema", "The data schema (no code block)")
-    ]
-    if "deepseek-reasoner" in model or not use_cot:
-        outputs = [outputs[-1]]
-
     module = PromptModule(
         task="Generate a markdown table containing a dataset schema. Columns should include name, type, and description. Make sure to enclose the table in XML tags.",
         inputs=[
             Input("data_samples", "A small set of examples from a dataset"),
         ],
-        outputs=outputs,
+        outputs=[Output("data_schema", "The data schema (no code block)")],
         model=model,
         verbose=verbose
     )

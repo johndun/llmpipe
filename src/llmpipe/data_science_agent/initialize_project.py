@@ -40,8 +40,7 @@ def initialize_project(
         data_sample_path=f"{repo_path}/sample_data.md",
         output_path=f"{repo_path}/data_schema.md",
         model=model,
-        verbose=verbose,
-        use_cot=use_cot
+        verbose=verbose
     )
     
     print("\n4. Creating initial commit...\n")

@@ -22,8 +22,8 @@ Write an analysis script, run it, fix bugs, summarize the results.
 python -m llmpipe.data_science_agent.write_script \
     --repo-path ~/test_repo \
     --data-path ~/data/dat.jsonl \
-    --task "Create a data visualization" \
-    --max-revisions 2 \
+    --task "Create a highly polished data visualization" \
+    --max-revisions 5 \
     --verbose
 
 python -m llmpipe.data_science_agent.write_script \

@@ -52,7 +52,7 @@ def run_finetuning(
     val_data: List[Dict],
     test_data: List[Dict],
     input_field: str = "text",
-    model_path: str = "roberta-base",
+    model_path: str = "distilbert/distilroberta-base",
     output_path: str = None,
     num_epochs: int = 0,
     learning_rate: float = 0.00001,
@@ -113,7 +113,7 @@ def run_finetuning(
         learning_rate=learning_rate,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
-        weight_decay=0.01,
+        weight_decay=0.0001,
         evaluation_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=True,
@@ -146,7 +146,7 @@ def run_finetuning(
             "num_epochs": num_epochs,
             "learning_rate": learning_rate,
             "batch_size": batch_size,
-            "weight_decay": 0.01,
+            "weight_decay": 0.001,
         }
     }
 
