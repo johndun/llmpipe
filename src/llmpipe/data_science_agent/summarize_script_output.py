@@ -14,36 +14,47 @@ def summarize_script_output(
     repo_path: Annotated[str, Option(help="Working directory")],
     script_name: Annotated[str, Option(help="Script name (with .py extension)")] = None,
     model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL,
-    verbose: Annotated[bool, Option(help="Stream output to stdout")] = False
+    verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
+    use_cot: Annotated[bool, Option(help="Use chain of thought prompting")] = True
 ):
     """Draft document text using EDA results."""
     script_name = script_name[:-3]
     # Read the data
-    with open(f"{repo_path}/artifacts/{script_name}/task.md", "r") as f:
+    with open(f"{repo_path}/artifacts/{script_name}/task.yaml", "r") as f:
         task = f.read()
     with open(f"{repo_path}/artifacts/{script_name}/output.log", "r") as f:
         script_log = f.read()
+    with open(f"{repo_path}/{script_name}.py", "r") as f:
+        script = f.read()
     with open(f"{repo_path}/data_schema.md", "r") as f:
         data_schema = f.read()
 
+    outputs=[
+        Output("thinking", "Begin by thinking step by step"),
+        Output("document", "A document containing a detailed, comprehensive summary. No title.")
+    ]
+    if "deepseek-reasoner" in model or not use_cot:
+        outputs = [outputs[-1]]
+
     module = PromptModule(
-        task="Summarize the contents of an output log from a python script. Use markdown headers for organization. Incorporate all of the relevant information from the results. Focus on coverage. Content will be revised and consolidated into a final document. Include markdown tables where appropriate. Include methodology and explainers for any statistical techniques used. Include a section on insights and takeaways.",
+        task="Summarize the contents of an output log from a python script. Include no information other than what is in the script and the script log. For exmaple, if the log is empty, then just say that. Use markdown headers for organization. Incorporate all of the relevant information from the results. Focus on coverage of the content in the script log. Include tables where appropriate. Include methodology and explainers for any statistical techniques used. Include a section on insights and takeaways when appropriate.",
         inputs=[
             Input("data_schema", "The data schema"),
-            Input("task", "The task associated with the script"),
-            Input("script_log", "Output log from a python script")
+            Input("task", "The task associated with a python script"),
+            Input("script", "A python script"),
+            Input("script_log", "Output log from the script")
 
         ],
-        outputs=[
-            Output("thinking", "Begin by thinking step by step"),
-            Output("document", "A document containing a detailed, comprehensive summary. No title.")
-        ],
+        outputs=outputs,
         model=model,
         verbose=verbose
     )
-    if verbose:
-        print(module.prompt)
-    response = module(data_schema=data_schema, script_log=script_log)
+    response = module(
+        data_schema=data_schema,
+        script_log=script_log,
+        task=task,
+        script=script
+    )
 
     output_path = f"{repo_path}/notes/{script_name}.md"
     with open(output_path, "w") as f:

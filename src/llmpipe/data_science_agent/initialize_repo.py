@@ -8,6 +8,12 @@ import typer
 from typer import Option
 
 
+UNIVARIATE_SUMMARY_TASK = """\
+script_name: univariate_summaries.py
+task: Write an exploratory data analysis script that prints univariate summary statistics. Include missing value counts. Include distinct value counts. Include a table of frequency counts for fields with fewer than 20 distinct values.
+"""
+
+
 def initialize_repo(
     repo_path: Annotated[str, Option(help="Directory to initialize git repo")] = "~/ds_tmp"
 ):
@@ -29,13 +35,16 @@ def initialize_repo(
 
     # Create notes subdirectory
     (output_path / "notes").mkdir()
+
+    # Create univariate summaries path
+    with open(output_path / "univariate_summaries_task.yaml", "w") as f:
+        f.write(UNIVARIATE_SUMMARY_TASK)
     
     # Get current directory path
     current_dir = Path(__file__).parent
     
     # Copy template files from current directory
     shutil.copy(current_dir / "cli_script_template.py", output_path / "cli_script_template.py")
-    shutil.copy(current_dir / "data_io_template.py", output_path / "data_io_template.py")
     
     # Initialize git repository
     git.Repo.init(output_path)

@@ -9,16 +9,27 @@ python -m llmpipe.data_science_agent.initialize_project \
     --verbose
 ```
 
-This generates an empty repo and adds 2 files, one with 3 random records from the dataset and one with an LLM generated data schema (based on these 3 records).
+This generates an empty repo and adds several files:
 
-Generate and execute a data analysis script, and generate a summary.
+- sample_data.md: 3 random records from the dataset
+- data_schema: LLM generated data schema (based on sample.md)
+- cli_script_template.py, data_io_template.py: Scripts illustrating implementation patterns
+- univariate_summaries_task.yaml: A yaml file containing task and script_name fields
+
+Write an analysis script, run it, fix bugs, summarize the results.
 
 ```bash
 python -m llmpipe.data_science_agent.write_script \
     --repo-path ~/test_repo \
     --data-path ~/data/dat.jsonl \
-    --script-name univariate_summary.py \
-    --task "Write an exploratory data analysis script that prints univariate summary statistics. Include missing value counts. Include distinct value counts. Include a table of frequency counts for fields with fewer than 20 distinct values." \
+    --task "Create a data visualization" \
+    --max-revisions 2 \
+    --verbose
+
+python -m llmpipe.data_science_agent.write_script \
+    --repo-path ~/test_repo \
+    --data-path ~/data/dat.jsonl \
+    --task "Generate an updated dataset dat_cleaned.jsonl containing an updated 'text' column applying basic text data cleaning techniques." \
     --max-revisions 2 \
     --verbose
 ```

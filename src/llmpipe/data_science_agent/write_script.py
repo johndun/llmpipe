@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import yaml
 from typing import Annotated
 
 import git
@@ -45,7 +46,7 @@ def run_aider(
         message_file (str): Message to send to aider.
         working_dir (str): The directory to run the command in.
     """
-    command_str = f"""aider --map-tokens 500 --no-analytics --no-show-model-warnings --stream --model {model} --message-file {message_file} --yes --read cli_script_template.py --read data_io_template.py {script_path}"""
+    command_str = f"""aider --map-tokens 500 --no-analytics --no-show-model-warnings --stream --model {model} --message-file {message_file} --yes --read cli_script_template.py {script_path}"""
     run_command(command_str, working_dir)
 
 
@@ -63,13 +64,14 @@ Outputs:
 - Printed outputs should be clearly labeled.
 - If the task requires creating charts or graphs, they should be created in `output_basepath`.
 - Artifacts should have fixed filenames. DO NOT use timestamps in artifact file names.
+- Transformed datasets should be saved in the directory containing the input data (`os.path.dirname(data_path)`).
 
 Guidelines:
 
 - Follow any implementation patterns provided to you in read-only _template.py files.
 - Make sure to: `os.makedirs(output_basepath, exist_ok=True)`
-- Only base python3.10 packages, along with pandas, scipy, nltk, numpy, matplotlib, and seaborn may be used.
-- Only create charts, graphs, or other data artifaccts when explicitly asked to. Print the outputs needed by the task.
+- Only base python3.10 packages, along with pandas, scipy, nltk, numpy, matplotlib, and seaborn may be used. Do not use any additional packages that need to be installed!
+- Only create charts, graphs, or other data artifacts when explicitly asked to. Print the outputs needed by the task.
 
 <task>
 {task}
@@ -89,20 +91,24 @@ data_samples:
 
 
 def write_script(
-    task: Annotated[str, Option(help="Task (ignored if task_file is provided)")],
     repo_path: Annotated[str, Option(help="Working directory")],
     data_path: Annotated[str, Option(help="Dataset path")],
+    task: Annotated[str, Option(help="Task (ignored if task_file is provided)")] = "",
     script_name: Annotated[str, Option(help="Script name (with .py extension)")] = None,
-    task_file: Annotated[str, Option(help="Optional file containing task description")] = None,
+    task_file: Annotated[str, Option(help="Optional yaml file containing parameters")] = None,
     model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL,
     verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
-    max_revisions: Annotated[int, Option(help="Maximum number of revisions")] = 0
+    max_revisions: Annotated[int, Option(help="Maximum number of revisions")] = 0,
+    use_cot: Annotated[bool, Option(help="Use chain of thought prompting")] = True
 ):
     """Generate detailed requirements for a data science EDA task using an LLM."""
+    assert task or task_file
     # Read task from file if specified
     if task_file:
         with open(task_file, "r") as f:
-            task = f.read()
+            config = yaml.safe_load(f)
+            task = config["task"]
+            script_name = config.get("script_name", script_name)
 
     # Read the schema
     with open(f"{repo_path}/data_schema.md", "r") as f:
@@ -149,14 +155,17 @@ def write_script(
     script_name_stem = script_name[:-3]
     log_dir = os.path.join(repo_path, "artifacts", script_name_stem)
     log_path = os.path.join(log_dir, "output.log")
-    task_path = os.path.join(log_dir, "task.md")
+    task_path = os.path.join(log_dir, "task.yaml")
     log_path_rel = os.path.join("artifacts", script_name_stem, "output.log")
 
     os.makedirs(log_dir, exist_ok=True)
     
-    # Write task to task.md
+    # Write task to task.yaml
     with open(task_path, "w") as f:
-        f.write(task)
+        f.write(yaml.dump({
+            "task": task,
+            "script_name": script_name
+        }, default_flow_style=False, width=float('inf')))
     
     # Run script and write output to artifacts/scriptname/output.log
     run_command(f"python {script_name} --data-path {data_path} > {log_path_rel} 2>&1", repo_path)
@@ -180,7 +189,8 @@ def write_script(
         repo_path=repo_path,
         script_name=script_name,
         model=model,
-        verbose=verbose
+        verbose=verbose,
+        use_cot=use_cot
     )
 
 
