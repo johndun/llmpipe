@@ -181,7 +181,7 @@ def write_script(
             image_files.extend([os.path.join("artifacts", script_name_stem, f) 
                               for f in os.listdir(log_dir) 
                               if f.lower().endswith(ext)])
-        image_files_str = ' '.join(image_files)
+        image_files_str = ' '.join(image_files[:4])
         
         bugfix_cmd = f"aider --map-tokens 500 --no-analytics --no-show-model-warnings --stream --model {model} --message \"Review the script outputs and fix errors encountered. Do not make efficiency or minor formatting changes. Do not address warnings.\" --yes --read {log_path_rel} {script_name} data_schema.md {image_files_str}"
         run_command(bugfix_cmd, repo_path)
