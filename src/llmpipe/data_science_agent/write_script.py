@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -8,6 +9,8 @@ import git
 import typer
 from typer import Option
 
+from llmpipe.data_science_agent.get_data_sample import get_data_sample
+from llmpipe.data_science_agent.get_data_schema import get_data_schema
 from llmpipe.data_science_agent.summarize_script_output import summarize_script_output
 from llmpipe.field import Input, Output
 from llmpipe.prompt_module import PromptModule
@@ -111,18 +114,22 @@ def write_script(
             script_name = config.get("script_name", script_name)
 
     # Read the schema
-    with open(f"{repo_path}/data_schema.md", "r") as f:
-        schema = f.read()
+    schema_raw = get_data_schema(data_path=data_path)
+    schema = ""
+    for field in schema_raw:
+        schema += f"Field: {field['name']}\n"
+        schema += f"  Type: {field['type']}\n"
+        schema += f"  Nullable: {field['nullable']}\n"
+        schema += "\n"
 
     # Read the data samples
-    with open(f"{repo_path}/sample_data.md", "r") as f:
-        data_samples = f.read()
+    data_samples = get_data_sample(data_path=data_path)
 
     # Generate a script name
     if not script_name:
         script_name_module = PromptModule(
-            task="Given a data science task, generate a python script name (with .py extension).",
-            inputs=[Input("task", "A data science task")],
+            task="Given a task to write a python script, generate a name for the script (with .py extension).",
+            inputs=[Input("task", "A task")],
             outputs=[Output("script_name", "Python script name")],
             model=model,
             verbose=verbose

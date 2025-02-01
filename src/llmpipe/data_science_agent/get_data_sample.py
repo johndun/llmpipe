@@ -31,7 +31,7 @@ def truncate_sample(sample: Dict[str, Any]) -> Dict[str, Any]:
 
 def get_data_sample(
     data_path: Annotated[str, Option(help="Dataset path")],
-    n_samples: Annotated[int, Option("-n", "--n-samples", help="Number of samples to print")] = 5,
+    n_samples: Annotated[int, Option("-n", "--n-samples", help="Number of samples to print")] = 3,
     output_path: Annotated[str, Option(help="Path to save the samples")] = None
 ):
     """Print random samples from a dataset with truncated long values and optionally save them."""
@@ -58,6 +58,8 @@ def get_data_sample(
     else:
         for i, truncated in enumerate(truncated_samples, 1):
             print(json.dumps(truncated, indent=2))
+
+    return truncated_samples
 
 
 if __name__ == "__main__":

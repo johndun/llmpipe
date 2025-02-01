@@ -26,8 +26,17 @@ def summarize_script_output(
         script_log = f.read()
     with open(f"{repo_path}/{script_name}.py", "r") as f:
         script = f.read()
-    with open(f"{repo_path}/data_schema.md", "r") as f:
-        data_schema = f.read()
+    # Read the schema
+    schema_raw = get_data_schema(data_path=data_path)
+    schema = ""
+    for field in schema_raw:
+        schema += f"Field: {field['name']}\n"
+        schema += f"  Type: {field['type']}\n"
+        schema += f"  Nullable: {field['nullable']}\n"
+        schema += "\n"
+
+    # Read the data samples
+    data_samples = get_data_sample(data_path=data_path)
 
     outputs=[
         Output("thinking", "Begin by thinking step by step"),
@@ -50,7 +59,7 @@ def summarize_script_output(
         verbose=verbose
     )
     response = module(
-        data_schema=data_schema,
+        data_schema=schema,
         script_log=script_log,
         script_task=script_task,
         script=script

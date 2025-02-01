@@ -23,12 +23,16 @@ def generate_followup(
 ):
     """Draft followups using EDA results."""
     # Read the schema
-    with open(f"{repo_path}/data_schema.md", "r") as f:
-        data_schema = f.read()
+    schema_raw = get_data_schema(data_path=data_path)
+    schema = ""
+    for field in schema_raw:
+        schema += f"Field: {field['name']}\n"
+        schema += f"  Type: {field['type']}\n"
+        schema += f"  Nullable: {field['nullable']}\n"
+        schema += "\n"
 
     # Read the data samples
-    with open(f"{repo_path}/sample_data.md", "r") as f:
-        data_samples = f.read()
+    data_samples = get_data_sample(data_path=data_path)
 
     logs = collect_files(f"{repo_path}/notes")
     txt = []
@@ -56,7 +60,7 @@ def generate_followup(
     )
     response = module(
         data_samples=data_samples,
-        data_schema=data_schema,
+        data_schema=schema,
         results=results
     )
     followup_task = response["followup_task"]
