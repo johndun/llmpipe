@@ -42,7 +42,7 @@ def summarize_script_output(
             Input("data_schema", "The data schema"),
             Input("script_task", "The task associated with a python script"),
             Input("script", "A python script"),
-            Input("script_log", "Output log from the script")
+            Input("script_log", "Output log from the script. May be empty.")
 
         ],
         outputs=outputs,

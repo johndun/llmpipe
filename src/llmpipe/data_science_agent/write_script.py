@@ -56,7 +56,7 @@ Write a python script to complete a task.
 Script inputs:
 
 - data-path: Script should input a single dataset (schema defined below, no default).
-- output-basepath: Directory in which to save script outputs, such as graph images. Defaults to artifacts/{script_name}
+- output-basepath: Directory in which to save script outputs, such as graph images. Defaults to artifacts/{script_name} (without the .py extension).
 - Script may have additional command line arguments. These should all have defaults.
 
 Outputs:

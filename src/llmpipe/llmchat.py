@@ -12,7 +12,7 @@ import typer
 from litellm import completion, ModelResponse, get_model_info, stream_chunk_builder
 from litellm.utils import function_to_dict
 
-from llmpipe.constants import DEFAULT_MODEL
+from llmpipe.constants import DEFAULT_MODEL, DEFAULT_MAX_TOKENS
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ class LlmChat:
     """
     model: str = DEFAULT_MODEL  #: A litellm model identifier: https://docs.litellm.ai/docs/providers
     system_prompt: str = ""  #: A system prompt (default: )
-    max_tokens: int = 4096  #: The maximum number of tokens to generate (default: 4,096)
+    max_tokens: int = DEFAULT_MAX_TOKENS  #: The maximum number of tokens to generate (default: 4,096)
     top_p: float = 1.0  #: The cumulative probability for top-p sampling (default: 1.)
     top_k: int = 1  #: K for top-k sampling (default: 1)
     temperature: float = 0.0  #: The sampling temperature to use for generation (default: 0.)
