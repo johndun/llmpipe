@@ -175,7 +175,15 @@ def write_script(
     n_tries = 0
     bugfree = False
     while not bugfree and n_tries < max_revisions:
-        bugfix_cmd = f"aider --map-tokens 500 --no-analytics --no-show-model-warnings --stream --model {model} --message \"Review the script outputs and fix errors encountered. Do not make efficiency or minor formatting changes. Do not address warnings.\" --yes --read {log_path_rel} {script_name} data_schema.md"
+        # Get list of image files in log directory
+        image_files = []
+        for ext in ['.png', '.jpg', '.jpeg', '.gif']:
+            image_files.extend([os.path.join("artifacts", script_name_stem, f) 
+                              for f in os.listdir(log_dir) 
+                              if f.lower().endswith(ext)])
+        image_files_str = ' '.join(image_files)
+        
+        bugfix_cmd = f"aider --map-tokens 500 --no-analytics --no-show-model-warnings --stream --model {model} --message \"Review the script outputs and fix errors encountered. Do not make efficiency or minor formatting changes. Do not address warnings.\" --yes --read {log_path_rel} {script_name} data_schema.md {image_files_str}"
         run_command(bugfix_cmd, repo_path)
         new_git_hash = git.Repo(repo_path).head.commit.hexsha
         if new_git_hash == last_git_hash:
