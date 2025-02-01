@@ -21,7 +21,7 @@ def summarize_script_output(
     script_name = script_name[:-3]
     # Read the data
     with open(f"{repo_path}/artifacts/{script_name}/task.yaml", "r") as f:
-        task = f.read()
+        script_task = f.read()
     with open(f"{repo_path}/artifacts/{script_name}/output.log", "r") as f:
         script_log = f.read()
     with open(f"{repo_path}/{script_name}.py", "r") as f:
@@ -40,7 +40,7 @@ def summarize_script_output(
         task="Summarize the contents of an output log from a python script. Include no information other than what is in the script and the script log. For exmaple, if the log is empty, then just say that. Use markdown headers for organization. Incorporate all of the relevant information from the results. Focus on coverage of the content in the script log. Include tables where appropriate. Include methodology and explainers for any statistical techniques used. Include a section on insights and takeaways when appropriate.",
         inputs=[
             Input("data_schema", "The data schema"),
-            Input("task", "The task associated with a python script"),
+            Input("script_task", "The task associated with a python script"),
             Input("script", "A python script"),
             Input("script_log", "Output log from the script")
 
@@ -52,7 +52,7 @@ def summarize_script_output(
     response = module(
         data_schema=data_schema,
         script_log=script_log,
-        task=task,
+        script_task=script_task,
         script=script
     )
 
