@@ -8,7 +8,8 @@ from typer import Option
 from llmpipe.field import Input, Output
 from llmpipe.prompt_module import PromptModule
 from llmpipe.constants import DEFAULT_MODEL
-
+from llmpipe.data_science_agent.get_data_sample import get_data_sample
+from llmpipe.data_science_agent.get_data_schema import get_data_schema
 from llmpipe.data_science_agent.collect_files import collect_files
 from llmpipe.data_science_agent.write_script import write_script
 
@@ -32,7 +33,7 @@ def generate_followup(
         schema += "\n"
 
     # Read the data samples
-    data_samples = get_data_sample(data_path=data_path)
+    data_samples = json.dumps(get_data_sample(data_path=data_path), indent=2)
 
     logs = collect_files(f"{repo_path}/notes")
     txt = []

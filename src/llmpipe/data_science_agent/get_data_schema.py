@@ -122,8 +122,6 @@ def get_data_schema(
         with open(output_path, "w") as f:
             f.write(schema_str)
         print(f"\nSaved schema to {output_path}")
-    else:
-        print(schema_str)
 
     return schema
 

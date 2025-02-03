@@ -55,9 +55,6 @@ def get_data_sample(
         with open(output_path, "w") as f:
             f.write(json.dumps(truncated_samples, indent=True))
         print(f"Saved {n_samples} samples to {output_path}")
-    else:
-        for i, truncated in enumerate(truncated_samples, 1):
-            print(json.dumps(truncated, indent=2))
 
     return truncated_samples
 

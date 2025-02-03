@@ -8,10 +8,13 @@ from typer import Option
 from llmpipe.field import Input, Output
 from llmpipe.prompt_module import PromptModule
 from llmpipe.constants import DEFAULT_MODEL
+from llmpipe.data_science_agent.get_data_sample import get_data_sample
+from llmpipe.data_science_agent.get_data_schema import get_data_schema
 
 
 def summarize_script_output(
     repo_path: Annotated[str, Option(help="Working directory")],
+    data_path: Annotated[str, Option(help="Dataset path")],
     script_name: Annotated[str, Option(help="Script name (with .py extension)")] = None,
     model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL,
     verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
@@ -36,7 +39,7 @@ def summarize_script_output(
         schema += "\n"
 
     # Read the data samples
-    data_samples = get_data_sample(data_path=data_path)
+    data_samples = json.dumps(get_data_sample(data_path=data_path), indent=2)
 
     outputs=[
         Output("thinking", "Begin by thinking step by step"),

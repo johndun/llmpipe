@@ -47,14 +47,15 @@ def compute_metrics(pred: EvalPrediction, id2label: Dict[int, str] = None) -> Di
     return metrics
 
 
-def run_finetuning(
+def run_small_lm_finetuning(
     train_data: List[Dict],
     val_data: List[Dict],
-    test_data: List[Dict],
+    test_data: List[Dict] = None,
     input_field: str = "text",
+    label_field: str = "label",
     model_path: str = "distilbert/distilroberta-base",
     output_path: str = None,
-    num_epochs: int = 0,
+    num_epochs: int = 1,
     learning_rate: float = 0.00001,
     batch_size: int = 8,
 ) -> Dict:
@@ -65,6 +66,7 @@ def run_finetuning(
         val_data: Validation data samples  
         test_data: Test data samples
         input_field: The field to use as input to the transformer
+        label_field: The field to use as target for the transformer
         model_path: Local or HuggingFace model path
         output_path: Path to save model and metrics
         num_epochs: Number of training epochs (0 to skip training)
@@ -76,17 +78,18 @@ def run_finetuning(
     """
 
     # Get unique labels and create label mapping
-    all_labels = sorted(list(set([d["label"] for d in train_data + val_data + test_data])))
+    test_data = test_data or []
+    all_labels = sorted(list(set([d[label_field] for d in train_data + val_data + test_data])))
     label2id = {label: i for i, label in enumerate(all_labels)}
     id2label = {i: label for label, i in label2id.items()}
     num_labels = len(all_labels)
     for samples in (train_data, val_data, test_data):
         for sample in samples:
-            sample["label"] = label2id[sample["label"]]
+            sample[label_field] = label2id[sample[label_field]]
 
     train_dataset = Dataset.from_list(train_data)
     val_dataset = Dataset.from_list(val_data)
-    test_dataset = Dataset.from_list(test_data)
+    test_dataset = Dataset.from_list(test_data) if test_data else None
 
     # Load tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -104,7 +107,8 @@ def run_finetuning(
     # Tokenize datasets
     train_dataset = train_dataset.map(tokenize_function, batched=True)
     val_dataset = val_dataset.map(tokenize_function, batched=True)
-    test_dataset = test_dataset.map(tokenize_function, batched=True)
+    if test_dataset is not None:
+        test_dataset = test_dataset.map(tokenize_function, batched=True)
 
     # Set up training arguments
     training_args = TrainingArguments(
@@ -114,7 +118,7 @@ def run_finetuning(
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
         weight_decay=0.0001,
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=True,
         push_to_hub=False,
@@ -135,7 +139,7 @@ def run_finetuning(
 
     # Evaluate on validation and test sets
     val_metrics = trainer.evaluate()
-    test_metrics = trainer.evaluate(test_dataset)
+    test_metrics = trainer.evaluate(test_dataset) if test_dataset is not None else None
 
     # Save metrics and label mappings
     metrics = {
@@ -146,7 +150,7 @@ def run_finetuning(
             "num_epochs": num_epochs,
             "learning_rate": learning_rate,
             "batch_size": batch_size,
-            "weight_decay": 0.001,
+            "weight_decay": 0.0001,
         }
     }
 
@@ -165,6 +169,7 @@ def finetune(
     val_input_data_path: Annotated[str, Option(help="Path to validation data")] = None,
     test_input_data_path: Annotated[str, Option(help="Path to test data")] = None,
     input_field: Annotated[str, Option(help="The field to use as input to the transformer")] = "text",
+    label_field: Annotated[str, Option(help="The field to use as the target for the transformer")] = "label",
     output_path: Annotated[str, Option(help="Path to save model and metrics")] = None,
     num_epochs: Annotated[int, Option(help="Number of training epochs (0 to skip training)")] = 0,
     learning_rate: Annotated[float, Option(help="Learning rate")] = 0.00001,
@@ -183,11 +188,12 @@ def finetune(
     test_data = read_data(test_input_data_path)
     
     # Run finetuning
-    run_finetuning(
+    run_small_lm_finetuning(
         train_data=train_data,
         val_data=val_data,
         test_data=test_data,
         input_field=input_field,
+        label_field=label_field,
         model_path=model_path,
         output_path=output_path,
         num_epochs=num_epochs,

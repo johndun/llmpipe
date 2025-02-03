@@ -22,14 +22,14 @@ Write an analysis script, run it, fix bugs, summarize the results.
 python -m llmpipe.data_science_agent.write_script \
     --repo-path ~/test_repo \
     --data-path ~/data/dat.jsonl \
-    --task "Create a highly polished data visualization" \
-    --max-revisions 5 \
+    --task "Generate an updated dataset dat_cleaned.jsonl containing a 'text_cleaned' column applying basic text data cleaning techniques." \
+    --max-revisions 2 \
     --verbose
 
 python -m llmpipe.data_science_agent.write_script \
     --repo-path ~/test_repo \
     --data-path ~/data/dat.jsonl \
-    --task "Generate an updated dataset dat_cleaned.jsonl containing an updated 'text' column applying basic text data cleaning techniques." \
+    --task "Fit an initial baseline fine tuned ROBERTA model to predict the labels with the text field." \
     --max-revisions 2 \
     --verbose
 ```

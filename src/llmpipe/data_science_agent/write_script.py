@@ -40,6 +40,7 @@ def run_aider(
     message_file: Annotated[str, Option(help="Message file to send to aider")],
     script_path: Annotated[str, Option(help="Script name (or path relative to repo_path)")],
     working_dir: Annotated[str, Option(help="Working directory to run the command in")],
+    script_template: Annotated[str, Option(help="The script template to include in the aider command")] = "cli_script_template.py",
     model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL
 ):
     """
@@ -49,32 +50,20 @@ def run_aider(
         message_file (str): Message to send to aider.
         working_dir (str): The directory to run the command in.
     """
-    command_str = f"""aider --map-tokens 500 --no-analytics --no-show-model-warnings --stream --model {model} --message-file {message_file} --yes --read cli_script_template.py {script_path}"""
+    command_str = f"""aider --map-tokens 500 --no-analytics --no-show-model-warnings --stream --model {model} --message-file {message_file} --yes --read {script_template} {script_path}"""
     run_command(command_str, working_dir)
 
 
+SCRIPT_TEMPLATE_SELECTION_TASK = """\
+Given a task, select the most appropriate python script template:
+
+finetune_template.py: A template for ML model training and fine tuning tasks.
+annotation_template.py: A template for annotating data using an LLM model.
+cli_script_template.py: A general purpose template for a python script.
+"""
+
 AIDER_MESSAGE_TEMPLATE = """\
-Write a python script to complete a task.
-
-Script inputs:
-
-- data-path: Script should input a single dataset (schema defined below, no default).
-- output-basepath: Directory in which to save script outputs, such as graph images. Defaults to artifacts/{script_name} (without the .py extension).
-- Script may have additional command line arguments. These should all have defaults.
-
-Outputs:
-
-- Printed outputs should be clearly labeled.
-- If the task requires creating charts or graphs, they should be created in `output_basepath`.
-- Artifacts should have fixed filenames. DO NOT use timestamps in artifact file names.
-- Transformed datasets should be saved in the directory containing the input data (`os.path.dirname(data_path)`).
-
-Guidelines:
-
-- Follow any implementation patterns provided to you in read-only _template.py files.
-- Make sure to: `os.makedirs(output_basepath, exist_ok=True)`
-- Only base python3.10 packages, along with pandas, scipy, nltk, numpy, matplotlib, and seaborn may be used. Do not use any additional packages that need to be installed!
-- Only create charts, graphs, or other data artifacts when explicitly asked to. Print the outputs needed by the task.
+Write a python script to complete a task. Follow any implementation patterns provided to you in read-only _template.py files.
 
 <task>
 {task}
@@ -123,7 +112,7 @@ def write_script(
         schema += "\n"
 
     # Read the data samples
-    data_samples = get_data_sample(data_path=data_path)
+    data_samples = json.dumps(get_data_sample(data_path=data_path), indent=2)
 
     # Generate a script name
     if not script_name:
@@ -135,8 +124,18 @@ def write_script(
             verbose=verbose
         )
         script_name = script_name_module(task=task)["script_name"]
-
     assert script_name
+
+    # Select the best script template
+    template_selection_module = PromptModule(
+        task=SCRIPT_TEMPLATE_SELECTION_TASK,
+        inputs=[Input("task", "A task")],
+        outputs=[Output("script_template", "Python script template. Must exactly match one of the python template file names.")],
+        model=model,
+        verbose=verbose
+    )
+    script_template = template_selection_module(task=task)["script_template"]
+    assert script_template
 
     # Write the script
     message = AIDER_MESSAGE_TEMPLATE.format(
@@ -155,7 +154,8 @@ def write_script(
         message_file=message_file,
         working_dir=repo_path,
         model=model,
-        script_path=script_name
+        script_path=script_name,
+        script_template=script_template
     )
 
     # Run the script and write the output to a log file
@@ -202,6 +202,7 @@ def write_script(
 
     summarize_script_output(
         repo_path=repo_path,
+        data_path=data_path,
         script_name=script_name,
         model=model,
         verbose=verbose,
