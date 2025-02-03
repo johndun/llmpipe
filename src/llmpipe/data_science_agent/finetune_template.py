@@ -12,7 +12,7 @@ import typer
 from typer import Option
 
 from llmpipe import read_data, write_data
-from llmpipe.annotate_and_finetune import split_data, run_small_lm_finetuning
+from llmpipe.data_science_agent.finetune import split_data, run_small_lm_finetuning
 
 
 def train_model(

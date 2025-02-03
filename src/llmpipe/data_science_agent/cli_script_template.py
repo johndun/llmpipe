@@ -1,13 +1,16 @@
 """
 Notes:
 
-- All inputs should be Option type, even if no default is provided
-- Script should input a single dataset as `data_path`. The schema is provided below.
-- Any other small script outputs, such as graph image files, should be saved to the path given by `output_basepath`. Set the default to artifacts/{script_name} without the .py extension. Artifacts should have fixed filenames. DO NOT use timestamps in artifact file names.
-- Script may have additional command line arguments. These should all have defaults.
-- Any dataset outputs should be saved in the same directory containing the input data (`os.path.dirname(data_path)`)
-- Only base python3.10 packages, along with: pandas, scipy, nltk, numpy, matplotlib, seaborn, transformers, torch, datasets. Do not use any additional packages that need to be installed!
-- Only create charts, graphs, or other data artifacts when explicitly asked to. Print the outputs needed by the task. Printed outputs should be clearly labeled.
+- Inputs:
+    - All inputs should be Option type, even if no default is provided
+    - Script should input a single dataset as `data_path`. The schema is provided below.
+    - Script may have additional command line arguments. These should all have defaults.
+- Outputs:
+    - Non-dataset small script outputs, such as graph image files, should be saved to the path given by `output_basepath`. The default value for `output_basepath` should point to artifacts/{script_name} (without the .py extension). Artifacts should have fixed filenames. DO NOT use timestamps in artifact file names.
+    - Any dataset outputs should be saved in the same directory containing the input data (`os.path.dirname(data_path)`).
+    - Only create charts, graphs, or datasets when explicitly asked to. Print the outputs needed by the task. Printed outputs should be clearly labeled.
+- Other:
+    - Only base python3.10 packages, along with: pandas, scipy, nltk, numpy, matplotlib, seaborn, transformers, torch, datasets. Do not use any additional packages that need to be installed!
 """
 from typing import Annotated
 
