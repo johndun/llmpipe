@@ -66,8 +66,14 @@ def annotate(
 ):
     """Run annotation."""
     assert task and context_field and context_field_description
-    data_path = str(Path(config["data_path"]).expanduser())
-    output_data_path = str(Path(config["output_data_path"]).expanduser())
+    data_path = str(Path(data_path).expanduser())
+    output_data_path = str(Path(output_data_path).expanduser())
+
+    # Load allowed labels if provided
+    allowed_labels = None
+    if allowed_labels_path:
+        allowed_labels_path = str(Path(allowed_labels_path).expanduser())
+        allowed_labels = read_data(allowed_labels_path)
     os.makedirs(os.path.dirname(output_data_path), exist_ok=True)
 
     data = read_data(data_path)
