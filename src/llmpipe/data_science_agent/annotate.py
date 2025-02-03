@@ -3,6 +3,7 @@ from typing import Annotated, Dict, List
 import yaml
 import json
 import os
+import random
 import polars as pl
 from itertools import chain
 import typer
@@ -19,6 +20,7 @@ def run_annotation(
     samples: List[Dict],
     n_samples: int = None,
     num_proc: int = 1,
+    allowed_labels: List[Dict] = None,
 ) -> List[Dict]:
     """Run annotation on a dataset using the provided config.
 
@@ -46,7 +48,7 @@ def run_annotation(
         data["allowed_labels"] = [classes_md] * len(samples)
 
     # Run prompt and return results
-    return pl.from_dict(prompt(**data, num_proc=num_proc)).to_dicts()
+    return pl.from_dict(prompt_module(**data, num_proc=num_proc)).to_dicts()
 
 
 def annotate(
@@ -106,7 +108,7 @@ def annotate(
             "labels",
             "A table with annotated labels",
             fields=[
-                Output(id_col, "An id from `annotation_inputs`"),
+                Output(id_field, "An id from `annotation_inputs`"),
                 Output("label", "A label selected from `allowed_labels`")
             ]
         )
@@ -130,45 +132,44 @@ def annotate(
     print("\nStarting annotation phase...")
     print(f"Using model: {model}")
     print(f"Annotation batch size: {annotation_batch_size}")
+    # Load the data
+    samples = read_data(data_path)
+
     if annotation_batch_size == 1:
         annotated_samples = run_annotation(
-            config=annotation_config,
+            prompt_module=prompt,
             samples=samples,
             n_samples=n_samples,
             num_proc=num_proc,
-            model=model,
-            verbose=verbose,
             allowed_labels=allowed_labels
         )
         annotated_samples = pl.from_dicts(annotated_samples)
     else:
         batches = []
         for i in range(0, len(samples), annotation_batch_size):
-            batch = [{k: x[k] for k in (id_col, context_col)} for x in samples[i: i + annotation_batch_size]]
+            batch = [{k: x[k] for k in (id_field, context_field)} for x in samples[i: i + annotation_batch_size]]
             batches.append("\n".join([json.dumps(x) for x in batch]))
 
         batched_samples = [{"annotation_inputs": x} for x in batches]
 
         batch_annotated_samples = run_annotation(
-            config=annotation_config,
+            prompt_module=prompt,
             samples=batched_samples,
             n_samples=n_samples,
             num_proc=num_proc,
-            model=model,
-            verbose=verbose,
             allowed_labels=allowed_labels
         )
 
         labels = list(chain(*[x["labels"] for x in batch_annotated_samples if x["labels"] is not None]))
         annotated_samples = pl.from_dicts(samples).join(
-            pl.from_dicts(labels).with_columns(pl.col(id_col).cast(pl.UInt32).alias(id_col)),
-            on=id_col, how="inner"
+            pl.from_dicts(labels).with_columns(pl.col(id_field).cast(pl.UInt32).alias(id_field)),
+            on=id_field, how="inner"
         )
 
     for k in ("thinking", "allowed_labels"):
         if k in annotated_samples.columns:
-            annotated_samples = annotatd_samples.drop(k)
-        annotated_samples = pl.to_dicts()
+            annotated_samples = annotated_samples.drop(k)
+        annotated_samples = annotated_samples.to_dicts()
     return annotated_samples
 
 
