@@ -3,6 +3,8 @@ Template for generating annotation scripts.
 
 This template provides a basic structure for creating annotation scripts
 using the llmpipe annotation functionality.
+
+Generally, template is to be used with a yaml file containing a set of labels
 """
 
 from pathlib import Path
@@ -13,10 +15,11 @@ from typing import Annotated
 from llmpipe.constants import DEFAULT_MODEL
 from llmpipe.data_science_agent.annotate import annotate
 
+
 def main(
     data_path: Annotated[str, Option(help="Path to input dataset")] = "data/input.jsonl",
     output_data_path: Annotated[str, Option(help="Path to save annotated dataset")] = "data/output.jsonl",
-    n_samples: Annotated[int, Option(help="Number of random samples to process")] = None,
+    n_samples: Annotated[int, Option(help="Number of random samples to process")] = 4,
     annotation_batch_size: Annotated[int, Option(help="Number of samples to annotate at one time")] = 1,
     num_proc: Annotated[int, Option(help="Number of processes to use")] = 1,
     model: Annotated[str, Option(help="LiteLLM model identifier")] = DEFAULT_MODEL,
@@ -53,6 +56,7 @@ def main(
 
     print(f"\nAnnotation complete. Results saved to: {output_data_path}")
     return annotated_samples
+
 
 if __name__ == "__main__":
     app = typer.Typer(add_completion=False, pretty_exceptions_show_locals=False)
