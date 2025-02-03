@@ -27,9 +27,9 @@ class PromptModule(LlmChat):
     task: str = "" #: The task description at the top of the prompt
     outputs: List[Output] = field(default_factory=lambda: [])  #: Prompt outputs
     inputs: List[Input] = field(default_factory=lambda: [])  #: Prompt inputs.
-    outputs_header: str = "Generate the following outputs enclosed within XML tags:"  #: The outputs definition section header
+    outputs_header: str = "Generate within XML tags:"  #: The outputs definition section header
     verbose: bool = False  #: If true, print additional LLM output to stdout
-    footer: str = None  #: An optional prompt footer (text for the very end of the prompt)
+    footer: str = ""  #: An optional prompt footer (text for the very end of the prompt)
 
     def __post_init__(self):
         super().__post_init__()
@@ -71,7 +71,8 @@ class PromptModule(LlmChat):
         for x in self.outputs:
             prompt.append(x.definition)
 
-        prompt.append(self.footer)
+        if self.footer:
+            prompt.append(self.footer)
 
         return "\n\n".join(prompt)
 
