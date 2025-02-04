@@ -30,15 +30,15 @@ Analyze step by step:
 
         self.breaks_format = """\
 Lines from document that begin semantically meaningful chunks.
-Each line must exactly match a complete line from document."""
+Each line must exactly match a complete line from document, including indentation and formatting."""
 
-        super().__post_init__()
-        
         self.inputs = [self.document]
         self.outputs = [
             Output("thinking", self.cot),
             Output("breaks", self.breaks_format)
         ]
+
+        super().__post_init__()
 
     def chunk_text(self, text: str, breaks: List[str]) -> List[str]:
         """

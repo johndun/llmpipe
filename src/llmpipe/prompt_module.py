@@ -13,7 +13,7 @@ from llmpipe.data import read_data, write_data
 from llmpipe.field import Input, Output, output_factory
 from llmpipe.llmchat import LlmChat
 from llmpipe.template import Template
-from llmpipe.xml_utils import parse_text_for_one_tag
+from llmpipe.xml_utils import parse_text_for_one_tag, parse_text_for_tag
 from llmpipe.constants import DEFAULT_MODEL
 
 
@@ -30,6 +30,7 @@ class PromptModule(LlmChat):
     outputs_header: str = "Generate within XML tags:"  #: The outputs definition section header
     verbose: bool = False  #: If true, print additional LLM output to stdout
     footer: str = "Begin by thinking step by step"  #: An optional prompt footer (text for the very end of the prompt)
+    allow_multiple_outputs: bool = False  #: If true, allows for more than one of the same output
 
     def __post_init__(self):
         super().__post_init__()
@@ -102,9 +103,15 @@ class PromptModule(LlmChat):
         outputs = {}
         for field in self.outputs:
             try:
-                outputs[field.name] = field.process(
-                    parse_text_for_one_tag(response_text, field.name).strip()
-                )
+                if not self.allow_multiple_outputs:
+                    outputs[field.name] = field.process(
+                        parse_text_for_one_tag(response_text, field.name).strip()
+                    )
+                else:
+                    outputs[field.name] = [
+                        field.process(x.strip())
+                        for x in parse_text_for_tag(response_text, field.name)
+                    ]
             except Exception as e:
                 print(e)
                 outputs[field.name] = None
