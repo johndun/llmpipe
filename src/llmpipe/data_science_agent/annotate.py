@@ -36,8 +36,7 @@ def run_annotation(
         List of annotated samples
     """
     # Sample if requested
-    if n_samples is not None:
-        n_samples = min(n_samples, len(samples))
+    if n_samples and n_samples > 0 and n_samples < len(samples):
         samples = random.sample(samples, n_samples)
 
     data = pl.from_dicts(samples).to_dict(as_series=False)
@@ -61,13 +60,11 @@ def annotate(
     verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
     task: Annotated[str, Option(help="Annotation task prompt")] = "",
     context_field: Annotated[str, Option(help="The field to annotate")] = "",
-    context_field_description: Annotated[str, Option(help="Description of the annotation field")] = "",
-    id_field: Annotated[str, Option(help="The field containing unique identifier for each row. Only used for batch annotation.")] = "id",
-    allowed_labels_path: Annotated[str, Option(help="Path to jsonlines file containing allowed labels")] = None,
-    use_cot: Annotated[bool, Option(help="Use chain of thought prompting")] = True
+    output_field: Annotated[str, Option(help="Name of the output field")] = "label",
+    allowed_labels_path: Annotated[str, Option(help="Path to yaml file containing allowed labels")] = None,
 ):
     """Run annotation."""
-    assert task and context_field and context_field_description
+    assert task and context_field
     data_path = str(Path(data_path).expanduser())
     output_data_path = str(Path(output_data_path).expanduser())
 
@@ -75,35 +72,32 @@ def annotate(
     allowed_labels = None
     if allowed_labels_path:
         allowed_labels_path = str(Path(allowed_labels_path).expanduser())
-        allowed_labels = read_data(allowed_labels_path)
-    os.makedirs(os.path.dirname(output_data_path), exist_ok=True)
+        with open(allowed_labels_path, "r") as f:
+            allowed_labels = yaml.safe_load(f)["labels"]
+
+    os.makedirs(os.path.dirname(os.path.abspath(output_data_path)), exist_ok=True)
 
     data = read_data(data_path)
 
     # Configure annotation prompt
-    cot = Output("thinking", "Begin by thinking step by step"),
     if annotation_batch_size == 1:
         output = Output(
             "label",
             "A label selected from `allowed_labels`",
             inputs=[
-                Input(context_field, context_field_description),
+                Input(context_field, ""),
                 Input("allowed_labels", "The set of allowed labels")
             ]
-        )
-        outputs = (
-            [output]
-            if "deepseek-reasoner" in model or not use_cot else
-            [cot, output]
         )
         prompt = PromptModule(
             task=task,
             inputs=output.inputs,
-            outputs=outputs,
+            outputs=[output],
             model=model,
             verbose=verbose
         )
     else:
+        raise Exception
         output = JsonlinesOutput(
             "labels",
             "A table with annotated labels",
@@ -112,28 +106,26 @@ def annotate(
                 Output("label", "A label selected from `allowed_labels`")
             ]
         )
-        outputs = (
-            [output]
-            if "deepseek-reasoner" in model or not use_cot else
-            [cot, output]
-        )
         prompt = PromptModule(
             task=task,
             inputs=[
                 Input("annotation_inputs", "A table with annotation inputs"),
                 Input("allowed_labels", "The set of allowed labels")
             ],
-            outputs=outputs,
+            outputs=[output],
             model=model,
             verbose=verbose
         )
-        # TODO
 
     print("\nStarting annotation phase...")
     print(f"Using model: {model}")
     print(f"Annotation batch size: {annotation_batch_size}")
     # Load the data
     samples = read_data(data_path)
+
+    if not verbose:
+        from datasets.utils.logging import disable_progress_bar
+        disable_progress_bar()
 
     if annotation_batch_size == 1:
         annotated_samples = run_annotation(
@@ -169,8 +161,12 @@ def annotate(
     for k in ("thinking", "allowed_labels"):
         if k in annotated_samples.columns:
             annotated_samples = annotated_samples.drop(k)
-        annotated_samples = annotated_samples.to_dicts()
-    return annotated_samples
+
+    annotated_samples = annotated_samples.rename({"label": output_field})
+    annotated_samples = annotated_samples.to_dicts()
+
+    print(f"Writing output to {output_data_path}")
+    write_data(annotated_samples, output_data_path)
 
 
 if __name__ == "__main__":

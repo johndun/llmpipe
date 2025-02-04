@@ -15,8 +15,7 @@ def initialize_project(
     repo_path: Annotated[str, Option(help="Directory to initialize project in")],
     data_path: Annotated[str, Option(help="Dataset path")],
     model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL,
-    verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
-    use_cot: Annotated[bool, Option(help="Use chain of thought prompting")] = True
+    verbose: Annotated[bool, Option(help="Stream output to stdout")] = False
 ):
     """Initialize a project."""
     print("\n=== Initializing Project ===")
@@ -39,7 +38,6 @@ def initialize_project(
         data_path=data_path,
         model=model,
         verbose=verbose,
-        use_cot=use_cot,
         max_revisions=2
     )
     

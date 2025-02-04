@@ -15,6 +15,7 @@ from llmpipe import read_data, write_data
 from llmpipe.data_science_agent.finetune import split_data, run_small_lm_finetuning
 
 
+# Note the syntax for defining defaults.
 def train_model(
     data_path: Annotated[str, Option(help="Input dataset")],
     output_basepath: Annotated[str, Option(help="Path to save artifacts")],

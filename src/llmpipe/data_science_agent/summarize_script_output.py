@@ -1,5 +1,6 @@
 import json
 import random
+import yaml
 from typing import Any, Dict, List, Annotated
 
 import typer
@@ -17,14 +18,13 @@ def summarize_script_output(
     data_path: Annotated[str, Option(help="Dataset path")],
     script_name: Annotated[str, Option(help="Script name (with .py extension)")] = None,
     model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL,
-    verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
-    use_cot: Annotated[bool, Option(help="Use chain of thought prompting")] = True
+    verbose: Annotated[bool, Option(help="Stream output to stdout")] = False
 ):
     """Draft document text using EDA results."""
     script_name = script_name[:-3]
     # Read the data
     with open(f"{repo_path}/artifacts/{script_name}/task.yaml", "r") as f:
-        script_task = f.read()
+        script_task = yaml.safe_load(f)["task"]
     with open(f"{repo_path}/artifacts/{script_name}/output.log", "r") as f:
         script_log = f.read()
     with open(f"{repo_path}/{script_name}.py", "r") as f:
@@ -41,12 +41,7 @@ def summarize_script_output(
     # Read the data samples
     data_samples = json.dumps(get_data_sample(data_path=data_path), indent=2)
 
-    outputs=[
-        Output("thinking", "Begin by thinking step by step"),
-        Output("document", "A document containing a detailed, comprehensive summary. No title.")
-    ]
-    if "deepseek-reasoner" in model or not use_cot:
-        outputs = [outputs[-1]]
+    output = Output("document", "A document containing a detailed, comprehensive summary. No title.")
 
     module = PromptModule(
         task="Summarize the contents of an output log from a python script. Include no information other than what is in the script and the script log. For exmaple, if the log is empty, then just say that. Use markdown headers for organization. Incorporate all of the relevant information from the results. Focus on coverage of the content in the script log. Include tables where appropriate. Include methodology and explainers for any statistical techniques used. Include a section on insights and takeaways when appropriate.",
@@ -57,7 +52,7 @@ def summarize_script_output(
             Input("script_log", "Output log from the script. May be empty.")
 
         ],
-        outputs=outputs,
+        outputs=[output],
         model=model,
         verbose=verbose
     )

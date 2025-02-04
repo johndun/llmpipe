@@ -1,10 +1,9 @@
 """
-Template for exploratory data analysis python scripts.
+Template for data transformation python scripts.
 
 - All inputs should have defaults. Update the defaults with more appropriate ones based on the paths and data schema provided. Data paths should be absolute paths.
-- Only create charts, graphs or datasets when explicitly asked to. Prioritize printing the outputs needed by the task. These printed outputs should be clearly labeled.
-- Small, non-dataset outputs, such as graph image files, should be saved to the path given by `output_basepath`. All artifacts should have fixed filenames. DO NOT use timestamps in artifact file names.
-- Only base python3.10 packages, along with: pandas, scipy, nltk, numpy, matplotlib, seaborn, transformers, torch, datasets. Do not use any additional packages that need to be installed!
+- Dataset outputs should be saved to the same directory containing the input data
+- Only base python3.10 packages, along with: pandas, scipy, nltk, numpy, transformers, torch, datasets. Do not use any additional packages that need to be installed!
 """
 import os
 import pathlib
@@ -23,11 +22,19 @@ os.makedirs(LOG_PATH, exist_ok=True)
 # Note the syntax for defining defaults.
 def example_script(
         data_path: Annotated[str, Option(help="Input dataset")] = "~/data/dat.jsonl",
-        output_basepath: Annotated[str, Option(help="Path to save (non-dataset) artifacts")] = LOG_PATH
+        ...
+        # verbose: Annotated[bool, Option(help="Stream output to stdout")] = False
 ):
     """Run a script on a dataset."""
     data = read_data(data_path)  # Infers file type; returns a list of dicts
+
     ...
+
+
+    output_data_path = os.path.dirname(data_path) + "/output.jsonl"  # or csv or txt
+    print(f"Results saved to: {output_data_path}")
+    # write_data takes a list of dicts and a path
+    write_data(data, output_data_path)
 
 
 if __name__ == "__main__":

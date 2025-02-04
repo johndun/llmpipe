@@ -13,7 +13,7 @@ from typing import Annotated
 import typer
 from typer import Option
 
-from llmpipe import read_data, write_data
+from llmpipe import read_data
 
 
 LOG_PATH = "artifacts/" + pathlib.Path(__file__).stem

@@ -50,7 +50,7 @@ def run_aider(
         message_file (str): Message to send to aider.
         working_dir (str): The directory to run the command in.
     """
-    command_str = f"""aider --map-tokens 500 --no-analytics --no-show-model-warnings --stream --model {model} --message-file {message_file} --yes --read {script_template} {script_path}"""
+    command_str = f"""aider --no-analytics --no-show-model-warnings --stream --model {model} --message-file {message_file} --yes --read {script_template} {script_path}"""
     run_command(command_str, working_dir)
 
 
@@ -58,8 +58,9 @@ SCRIPT_TEMPLATE_SELECTION_TASK = """\
 Given a task, select the most appropriate python script template:
 
 finetune_template.py: A template for ML model training and fine tuning tasks.
-annotation_template.py: A template for annotating data using an LLM model.
-cli_script_template.py: A general purpose template for a python script.
+annotation_script_template.py: A template for scripts to perform LLM-based data annotation.
+eda_script_template.py: Template for exploratory data analysis python scripts.
+data_transform_script_template.py: Template for data transformation python scripts.
 """
 
 AIDER_MESSAGE_TEMPLATE = """\
@@ -90,8 +91,7 @@ def write_script(
     task_file: Annotated[str, Option(help="Optional yaml file containing parameters")] = None,
     model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL,
     verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
-    max_revisions: Annotated[int, Option(help="Maximum number of revisions")] = 0,
-    use_cot: Annotated[bool, Option(help="Use chain of thought prompting")] = True
+    max_revisions: Annotated[int, Option(help="Maximum number of revisions")] = 0
 ):
     """Generate detailed requirements for a data science EDA task using an LLM."""
     assert task or task_file
@@ -190,7 +190,7 @@ def write_script(
                               if f.lower().endswith(ext)])
         image_files_str = ' '.join(image_files[:4])
         
-        bugfix_cmd = f"aider --map-tokens 500 --no-analytics --no-show-model-warnings --stream --model {model} --message \"Review the script outputs and fix errors encountered. Do not make efficiency or minor formatting changes. Do not address warnings.\" --yes --read {log_path_rel} {script_name} data_schema.md {image_files_str}"
+        bugfix_cmd = f"aider --no-analytics --no-show-model-warnings --stream --model {model} --message \"Review the script outputs and fix errors encountered. Do not make efficiency or minor formatting changes. Do not address warnings.\" --yes --read {log_path_rel} {script_name} {image_files_str}"
         run_command(bugfix_cmd, repo_path)
         new_git_hash = git.Repo(repo_path).head.commit.hexsha
         if new_git_hash == last_git_hash:
@@ -205,8 +205,7 @@ def write_script(
         data_path=data_path,
         script_name=script_name,
         model=model,
-        verbose=verbose,
-        use_cot=use_cot
+        verbose=verbose
     )
 
 
