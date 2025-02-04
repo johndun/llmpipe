@@ -1,7 +1,6 @@
 import warnings
 warnings.filterwarnings('ignore', message='.*Valid config keys have changed in V2.*')
 
-
 import json
 import logging
 from dataclasses import dataclass
@@ -9,12 +8,16 @@ from typing import Dict, List, Callable, Union, Generator, Annotated
 import yaml
 import typer
 
+import litellm
 from litellm import completion, ModelResponse, get_model_info, stream_chunk_builder
 from litellm.utils import function_to_dict
 
 from llmpipe.constants import DEFAULT_MODEL, DEFAULT_MAX_TOKENS
 
+
 logger = logging.getLogger(__name__)
+
+litellm.drop_params=True
 
 
 @dataclass

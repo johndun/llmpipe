@@ -29,7 +29,7 @@ class PromptModule(LlmChat):
     inputs: List[Input] = field(default_factory=lambda: [])  #: Prompt inputs.
     outputs_header: str = "Generate within XML tags:"  #: The outputs definition section header
     verbose: bool = False  #: If true, print additional LLM output to stdout
-    footer: str = ""  #: An optional prompt footer (text for the very end of the prompt)
+    footer: str = "Begin by thinking step by step"  #: An optional prompt footer (text for the very end of the prompt)
 
     def __post_init__(self):
         super().__post_init__()

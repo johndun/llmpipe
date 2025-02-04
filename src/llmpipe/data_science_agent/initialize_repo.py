@@ -44,9 +44,10 @@ def initialize_repo(
     current_dir = Path(__file__).parent
     
     # Copy template files from current directory
-    shutil.copy(current_dir / "cli_script_template.py", output_path / "cli_script_template.py")
+    shutil.copy(current_dir / "eda_script_template.py", output_path / "eda_script_template.py")
+    shutil.copy(current_dir / "data_transform_script_template.py", output_path / "data_transform_script_template.py")
     shutil.copy(current_dir / "finetune_template.py", output_path / "finetune_template.py")
-    shutil.copy(current_dir / "annotation_template.py", output_path / "annotation_template.py")
+    shutil.copy(current_dir / "annotation_script_template.py", output_path / "annotation_script_template.py")
     
     # Initialize git repository
     git.Repo.init(output_path)

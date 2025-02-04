@@ -3,6 +3,7 @@ from typing import Annotated, Dict, List
 import yaml
 import json
 import os
+import random
 import polars as pl
 from itertools import chain
 import typer
@@ -19,6 +20,7 @@ def run_annotation(
     samples: List[Dict],
     n_samples: int = None,
     num_proc: int = 1,
+    allowed_labels: List[Dict] = None,
 ) -> List[Dict]:
     """Run annotation on a dataset using the provided config.
 
@@ -34,8 +36,7 @@ def run_annotation(
         List of annotated samples
     """
     # Sample if requested
-    if n_samples is not None:
-        n_samples = min(n_samples, len(samples))
+    if n_samples and n_samples > 0 and n_samples < len(samples):
         samples = random.sample(samples, n_samples)
 
     data = pl.from_dicts(samples).to_dict(as_series=False)
@@ -46,7 +47,7 @@ def run_annotation(
         data["allowed_labels"] = [classes_md] * len(samples)
 
     # Run prompt and return results
-    return pl.from_dict(prompt(**data, num_proc=num_proc)).to_dicts()
+    return pl.from_dict(prompt_module(**data, num_proc=num_proc)).to_dicts()
 
 
 def annotate(
@@ -59,55 +60,51 @@ def annotate(
     verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
     task: Annotated[str, Option(help="Annotation task prompt")] = "",
     context_field: Annotated[str, Option(help="The field to annotate")] = "",
-    context_field_description: Annotated[str, Option(help="Description of the annotation field")] = "",
-    id_field: Annotated[str, Option(help="The field containing unique identifier for each row. Only used for batch annotation.")] = "id",
-    allowed_labels_path: Annotated[str, Option(help="Path to jsonlines file containing allowed labels")] = None,
-    use_cot: Annotated[bool, Option(help="Use chain of thought prompting")] = True
+    output_field: Annotated[str, Option(help="Name of the output field")] = "label",
+    allowed_labels_path: Annotated[str, Option(help="Path to yaml file containing allowed labels")] = None,
 ):
     """Run annotation."""
-    assert task and context_field and context_field_description
-    data_path = str(Path(config["data_path"]).expanduser())
-    output_data_path = str(Path(config["output_data_path"]).expanduser())
-    os.makedirs(os.path.dirname(output_data_path), exist_ok=True)
+    assert task and context_field
+    data_path = str(Path(data_path).expanduser())
+    output_data_path = str(Path(output_data_path).expanduser())
+
+    # Load allowed labels if provided
+    allowed_labels = None
+    if allowed_labels_path:
+        allowed_labels_path = str(Path(allowed_labels_path).expanduser())
+        with open(allowed_labels_path, "r") as f:
+            allowed_labels = yaml.safe_load(f)["labels"]
+
+    os.makedirs(os.path.dirname(os.path.abspath(output_data_path)), exist_ok=True)
 
     data = read_data(data_path)
 
     # Configure annotation prompt
-    cot = Output("thinking", "Begin by thinking step by step"),
     if annotation_batch_size == 1:
         output = Output(
             "label",
             "A label selected from `allowed_labels`",
             inputs=[
-                Input(context_field, context_field_description),
+                Input(context_field, ""),
                 Input("allowed_labels", "The set of allowed labels")
             ]
-        )
-        outputs = (
-            [output]
-            if "deepseek-reasoner" in model or not use_cot else
-            [cot, output]
         )
         prompt = PromptModule(
             task=task,
             inputs=output.inputs,
-            outputs=outputs,
+            outputs=[output],
             model=model,
             verbose=verbose
         )
     else:
+        raise Exception
         output = JsonlinesOutput(
             "labels",
             "A table with annotated labels",
             fields=[
-                Output(id_col, "An id from `annotation_inputs`"),
+                Output(id_field, "An id from `annotation_inputs`"),
                 Output("label", "A label selected from `allowed_labels`")
             ]
-        )
-        outputs = (
-            [output]
-            if "deepseek-reasoner" in model or not use_cot else
-            [cot, output]
         )
         prompt = PromptModule(
             task=task,
@@ -115,55 +112,61 @@ def annotate(
                 Input("annotation_inputs", "A table with annotation inputs"),
                 Input("allowed_labels", "The set of allowed labels")
             ],
-            outputs=outputs,
+            outputs=[output],
             model=model,
             verbose=verbose
         )
-        # TODO
 
     print("\nStarting annotation phase...")
     print(f"Using model: {model}")
     print(f"Annotation batch size: {annotation_batch_size}")
+    # Load the data
+    samples = read_data(data_path)
+
+    if not verbose:
+        from datasets.utils.logging import disable_progress_bar
+        disable_progress_bar()
+
     if annotation_batch_size == 1:
         annotated_samples = run_annotation(
-            config=annotation_config,
+            prompt_module=prompt,
             samples=samples,
             n_samples=n_samples,
             num_proc=num_proc,
-            model=model,
-            verbose=verbose,
             allowed_labels=allowed_labels
         )
         annotated_samples = pl.from_dicts(annotated_samples)
     else:
         batches = []
         for i in range(0, len(samples), annotation_batch_size):
-            batch = [{k: x[k] for k in (id_col, context_col)} for x in samples[i: i + annotation_batch_size]]
+            batch = [{k: x[k] for k in (id_field, context_field)} for x in samples[i: i + annotation_batch_size]]
             batches.append("\n".join([json.dumps(x) for x in batch]))
 
         batched_samples = [{"annotation_inputs": x} for x in batches]
 
         batch_annotated_samples = run_annotation(
-            config=annotation_config,
+            prompt_module=prompt,
             samples=batched_samples,
             n_samples=n_samples,
             num_proc=num_proc,
-            model=model,
-            verbose=verbose,
             allowed_labels=allowed_labels
         )
 
         labels = list(chain(*[x["labels"] for x in batch_annotated_samples if x["labels"] is not None]))
         annotated_samples = pl.from_dicts(samples).join(
-            pl.from_dicts(labels).with_columns(pl.col(id_col).cast(pl.UInt32).alias(id_col)),
-            on=id_col, how="inner"
+            pl.from_dicts(labels).with_columns(pl.col(id_field).cast(pl.UInt32).alias(id_field)),
+            on=id_field, how="inner"
         )
 
     for k in ("thinking", "allowed_labels"):
         if k in annotated_samples.columns:
-            annotated_samples = annotatd_samples.drop(k)
-        annotated_samples = pl.to_dicts()
-    return annotated_samples
+            annotated_samples = annotated_samples.drop(k)
+
+    annotated_samples = annotated_samples.rename({"label": output_field})
+    annotated_samples = annotated_samples.to_dicts()
+
+    print(f"Writing output to {output_data_path}")
+    write_data(annotated_samples, output_data_path)
 
 
 if __name__ == "__main__":

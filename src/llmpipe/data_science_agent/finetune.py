@@ -1,5 +1,6 @@
+import random
 from pathlib import Path
-from typing import Annotated, Dict, List
+from typing import Annotated, Dict, List, Any
 import json
 import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix
@@ -16,6 +17,66 @@ import typer
 from typer import Option
 
 from llmpipe import read_data
+
+
+def split_data(data: List[Dict[Any, Any]], proportions: List[float]) -> List[List[Dict[Any, Any]]]:
+    """
+    Randomly shuffle a list of dictionaries and split it into sublists according to given proportions.
+
+    Args:
+        data: List of dictionaries to be split
+        proportions: List of float values that sum to 1, representing the proportion of data for each split
+
+    Returns:
+        List of lists, where each inner list contains dictionaries according to the specified proportions
+
+    Raises:
+        ValueError: If proportions don't sum to 1 (within floating point precision)
+        ValueError: If any proportion is negative
+        ValueError: If proportions list is empty
+    """
+    # Input validation
+    if not proportions:
+        raise ValueError("Proportions list cannot be empty")
+
+    if any(p < 0 for p in proportions):
+        raise ValueError("Proportions cannot be negative")
+
+    if not 0.99999 <= sum(proportions) <= 1.00001:  # Account for floating point imprecision
+        raise ValueError(f"Proportions must sum to 1, got {sum(proportions)}")
+
+    # Handle empty input data
+    if not data:
+        return [[] for _ in proportions]
+
+    # Create a copy and shuffle it
+    shuffled_data = data.copy()
+    random.shuffle(shuffled_data)
+
+    # Calculate the actual number of items for each split
+    total_items = len(shuffled_data)
+    split_sizes = []
+
+    # Convert proportions to actual counts
+    remaining_items = total_items
+    for i, proportion in enumerate(proportions[:-1]):  # Handle all but the last proportion
+        size = round(proportion * total_items)
+        split_sizes.append(size)
+        remaining_items -= size
+
+    # Add the remaining items to the last split to ensure we use all items
+    split_sizes.append(remaining_items)
+
+    # Split the data according to calculated sizes
+    result = []
+    start_idx = 0
+
+    for size in split_sizes:
+        result.append(shuffled_data[start_idx:start_idx + size])
+        start_idx += size
+
+    return result
+
 
 
 def compute_metrics(pred: EvalPrediction, id2label: Dict[int, str] = None) -> Dict:
@@ -60,10 +121,10 @@ def run_small_lm_finetuning(
     batch_size: int = 8,
 ) -> Dict:
     """Run finetuning on datasets.
-    
+
     Args:
         train_data: Training data samples
-        val_data: Validation data samples  
+        val_data: Validation data samples
         test_data: Test data samples
         input_field: The field to use as input to the transformer
         label_field: The field to use as target for the transformer
@@ -72,7 +133,7 @@ def run_small_lm_finetuning(
         num_epochs: Number of training epochs (0 to skip training)
         learning_rate: Learning rate
         batch_size: Batch size for training and evaluation
-        
+
     Returns:
         Dictionary containing metrics and model outputs
     """
@@ -186,7 +247,7 @@ def finetune(
     train_data = read_data(train_input_data_path)
     val_data = read_data(val_input_data_path)
     test_data = read_data(test_input_data_path)
-    
+
     # Run finetuning
     run_small_lm_finetuning(
         train_data=train_data,
