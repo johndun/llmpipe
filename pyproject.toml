@@ -6,15 +6,19 @@ authors = [
     {name = "John Dunavent", email = "dunavent.jm@gmail.com"},
 ]
 dependencies = [
-    "litellm>=1.58.2",
-    "typer>=0.15.1",
-    "numpydoc>=1.8",
-    "datasets",
     "aider-chat>=0.72.3",
+    "typer>=0.15.1",
     "polars>=1.21.0",
-    "GitPython>=3.1.44",
-    "torch>=2.2.2",
-    "transformers"
+    "torch==2.2.2",
+    "transformers==4.48.2",
+    "datasets",
+    "boto3",
+    "scikit-learn",
+    "scipy",
+    "nltk",
+    "matplotlib",
+    "seaborn",
+    "accelerate"
 ]
 requires-python = ">=3.10"
 
