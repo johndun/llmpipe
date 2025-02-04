@@ -23,6 +23,7 @@ Additional Guidelines and Rules:
 
 - Update the defaults below with more appropriate ones based on the paths and data schema provided
 - Data paths should be absolute paths. The allowed labels yaml file should be in the same directory as the script.
+- Be careful when constructing yaml files. Enclose longer or more complex descriptions in double quotes, or use multiline syntax.
 """
 
 from pathlib import Path

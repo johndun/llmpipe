@@ -25,7 +25,9 @@ def train_model(
     num_epochs: Annotated[int, Option(help="Number of training epochs")] = 1,
     learning_rate: Annotated[float, Option(help="Learning rate")] = 0.00001,
     batch_size: Annotated[int, Option(help="Batch size for training and evaluation")] = 8,
-    val_prop: Annotated[float, Option(help="The proportion of samples to use for validation")] = 0.2
+    val_prop: Annotated[float, Option(help="The proportion of samples to use for validation")] = 0.2,
+    # Make sure verbose defaults to False
+    verbose: Annotated[bool, Option(help="Show progress bars")] = False
 ):
     """Run a script on a dataset."""
     output_basepath = str(Path(output_basepath).expanduser())
@@ -42,13 +44,14 @@ def train_model(
         train_data=train_data,
         val_data=val_data,
         test_data=None,
+        output_path=output_basepath,
         input_field=input_field,
         label_field=label_field,
         model_path=model_path,
-        output_path=output_basepath,
         num_epochs=num_epochs,
         learning_rate=learning_rate,
-        batch_size=batch_size
+        batch_size=batch_size,
+        verbose=verbose
     )
 
 

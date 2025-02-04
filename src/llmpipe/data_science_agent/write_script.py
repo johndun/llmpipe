@@ -200,13 +200,14 @@ def write_script(
             last_git_hash = new_git_hash
             n_tries += 1
 
-    summarize_script_output(
-        repo_path=repo_path,
-        data_path=data_path,
-        script_name=script_name,
-        model=model,
-        verbose=verbose
-    )
+    if script_template in("eda_script_template.py", "finetune_template.py"):
+        summarize_script_output(
+            repo_path=repo_path,
+            data_path=data_path,
+            script_name=script_name,
+            model=model,
+            verbose=verbose
+        )
 
 
 if __name__ == "__main__":

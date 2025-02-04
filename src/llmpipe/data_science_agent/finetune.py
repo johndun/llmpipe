@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings('ignore', message='.*Precision is ill-defined.*')
+
 import random
 from pathlib import Path
 from typing import Annotated, Dict, List, Any
@@ -119,6 +122,7 @@ def run_small_lm_finetuning(
     num_epochs: int = 1,
     learning_rate: float = 0.00001,
     batch_size: int = 8,
+    verbose: bool = False
 ) -> Dict:
     """Run finetuning on datasets.
 
@@ -133,6 +137,7 @@ def run_small_lm_finetuning(
         num_epochs: Number of training epochs (0 to skip training)
         learning_rate: Learning rate
         batch_size: Batch size for training and evaluation
+        verbose: If true, show progress bars
 
     Returns:
         Dictionary containing metrics and model outputs
@@ -183,6 +188,7 @@ def run_small_lm_finetuning(
         save_strategy="epoch",
         load_best_model_at_end=True,
         push_to_hub=False,
+        disable_tqdm=not verbose
     )
 
     # Initialize trainer with compute_metrics that has access to label mappings
@@ -235,6 +241,7 @@ def finetune(
     num_epochs: Annotated[int, Option(help="Number of training epochs (0 to skip training)")] = 0,
     learning_rate: Annotated[float, Option(help="Learning rate")] = 0.00001,
     batch_size: Annotated[int, Option(help="Batch size for training and evaluation")] = 8,
+    verbose: Annotated[bool, Option(help="Show progress bars")] = False
 ):
     """CLI entry point to run finetuning on a dataset."""
     # Expand user paths
@@ -259,7 +266,8 @@ def finetune(
         output_path=output_path,
         num_epochs=num_epochs,
         learning_rate=learning_rate,
-        batch_size=batch_size
+        batch_size=batch_size,
+        verbose=verbose
     )
 
 

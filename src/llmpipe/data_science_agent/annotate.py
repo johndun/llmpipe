@@ -77,7 +77,7 @@ def annotate(
 
     os.makedirs(os.path.dirname(os.path.abspath(output_data_path)), exist_ok=True)
 
-    data = read_data(data_path)
+    id_field = "row_id"
 
     # Configure annotation prompt
     if annotation_batch_size == 1:
@@ -97,7 +97,6 @@ def annotate(
             verbose=verbose
         )
     else:
-        raise Exception
         output = JsonlinesOutput(
             "labels",
             "A table with annotated labels",
@@ -121,7 +120,7 @@ def annotate(
     print(f"Using model: {model}")
     print(f"Annotation batch size: {annotation_batch_size}")
     # Load the data
-    samples = read_data(data_path)
+    samples = read_data(data_path, as_df=True).with_row_index(id_field).to_dicts()
 
     if not verbose:
         from datasets.utils.logging import disable_progress_bar
