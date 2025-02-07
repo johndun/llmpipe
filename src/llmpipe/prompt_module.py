@@ -86,12 +86,15 @@ class PromptModule(LlmChat):
         try:
             prompt = Template(self.prompt).format(**inputs)
             if self.verbose:
+                print(80 * "─")
                 print(prompt)
+                print(80 * "─")
                 response_text = ""
                 for chunk in self._call_stream(prompt=prompt):
                     print(chunk, flush=True, end="")
                     response_text += chunk
                 print()
+                print(80 * "─")
             else:
                 response_text = self._call(prompt=prompt)
             logger.info(f"PromptModule response: {response_text}")

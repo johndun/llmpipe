@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass, field, asdict
 from typing import List, Union, Dict
 from io import StringIO
@@ -54,7 +55,7 @@ class Output(Input):
 
     def __post_init__(self):
         self.inputs = [
-            Input(**x) if isinstance(x, dict) else x
+            Input(x["name"], x["description"]) if isinstance(x, dict) else x
             for x in self.inputs
         ]
 

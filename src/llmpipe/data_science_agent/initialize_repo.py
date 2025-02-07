@@ -36,6 +36,9 @@ def initialize_repo(
     # Create notes subdirectory
     (output_path / "notes").mkdir()
 
+    # Create templates subdirectory
+    (output_path / "templates").mkdir()
+
     # Create univariate summaries path
     with open(output_path / "univariate_summaries_task.yaml", "w") as f:
         f.write(UNIVARIATE_SUMMARY_TASK)
@@ -44,10 +47,10 @@ def initialize_repo(
     current_dir = Path(__file__).parent
     
     # Copy template files from current directory
-    shutil.copy(current_dir / "eda_script_template.py", output_path / "eda_script_template.py")
-    shutil.copy(current_dir / "data_transform_script_template.py", output_path / "data_transform_script_template.py")
-    shutil.copy(current_dir / "finetune_template.py", output_path / "finetune_template.py")
-    shutil.copy(current_dir / "annotation_script_template.py", output_path / "annotation_script_template.py")
+    shutil.copy(current_dir / "eda_script_template.py", output_path / "templates" / "eda_script_template.py")
+    shutil.copy(current_dir / "data_transform_script_template.py", output_path / "templates" / "data_transform_script_template.py")
+    shutil.copy(current_dir / "finetune_template.py", output_path / "templates" / "finetune_template.py")
+    shutil.copy(current_dir / "annotation_script_template.py", output_path / "templates" / "annotation_script_template.py")
     
     # Initialize git repository
     git.Repo.init(output_path)

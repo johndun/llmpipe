@@ -12,31 +12,26 @@ class DocumentChunker(PromptModule):
         self.document = Input("document", "A document")
         
         self.task = """\
-Given a document containing text and/or code, identify meaningful semantic chunk boundaries that preserve context and readability.
+Given a document containing text and/or code, identify logical top-level section boundaries.
 
-Generate individual, complete lines from the document that start semantically meaningful chunks.
+Generate individual, complete lines from <document> that break the document into logical sections.
 
-Rules for text:
-- Begin new chunks at transitions in topic, argument, or narrative
-- Start chunks at structural elements (sections, paragraphs)
-- Keep chunks concise, but with enough context to be interpretable in isolation"""
+Rules for break lines:
 
-        self.cot = """\
-Analyze step by step:
-1. Identify natural content/code breaks
-2. Evaluate semantic independence of chunks
-3. Verify context preservation
-4. Confirm exact document line matches"""
+- Break lines should be the first line of each section.
+- Start sections at key structural elements: sections, paragraphs, functions, etc.
+- Each line must be a complete line (e.g., all text between two newlines) from the document, including whitespace, indentation, markdown formatting, and special characters.
+  - Be especially careful to use the right number of hash marks for markdown headers.
+  - Break lines must be complete lines, even when a line includes mismatched XML tags.
+- If a document cannot be broken into smaller sections, output the first line as the only break.
+
+The document begins here:"""
 
         self.breaks_format = """\
-Lines from document that begin semantically meaningful chunks.
-Each line must exactly match a complete line from document, including indentation and formatting."""
+Lines from <document> that break the document into logical sections."""
 
         self.inputs = [self.document]
-        self.outputs = [
-            Output("thinking", self.cot),
-            Output("breaks", self.breaks_format)
-        ]
+        self.outputs = [Output("breaks", self.breaks_format)]
 
         super().__post_init__()
 
@@ -102,7 +97,7 @@ Each line must exactly match a complete line from document, including indentatio
             List of text chunks
         """
         response = super().__call__(document=document)
-        breaks = [x.strip() for x in response["breaks"].split("\n") if x.strip()]
+        breaks = [x for x in response["breaks"].split("\n") if x.strip()]
         return self.chunk_text(document, breaks)
 
 

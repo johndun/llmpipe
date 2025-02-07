@@ -6,11 +6,10 @@ authors = [
     {name = "John Dunavent", email = "dunavent.jm@gmail.com"},
 ]
 dependencies = [
-    "aider-chat>=0.72.3",
-    "typer>=0.15.1",
-    "polars>=1.21.0",
-    "torch==2.2.2",
-    "transformers==4.48.2",
+    "typer",
+    "polars",
+    "torch",
+    "transformers",
     "datasets",
     "boto3",
     "scikit-learn",
@@ -24,13 +23,12 @@ requires-python = ">=3.10"
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.3",
+    "aider-chat",
+    "pytest",
     "ipython",
-    "nb-clean>=3.3.0",
-    "pytest-cov>=2.0",
-    "pdoc3>=0.11",
-    "jupyter>=1.1.1",
-    "boto3>=1.35"
+    "nb-clean",
+    "pytest-cov",
+    "pdoc3"
 ]
 
 [build-system]

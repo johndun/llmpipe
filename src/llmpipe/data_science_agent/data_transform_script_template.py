@@ -2,8 +2,9 @@
 Template for data transformation python scripts.
 
 - All inputs should have defaults. Update the defaults with more appropriate ones based on the paths and data schema provided. Data paths should be absolute paths.
-- Dataset outputs should be saved to the same directory containing the input data
-- Only base python3.10 packages, along with: pandas, scipy, nltk, numpy, transformers, torch, datasets. Do not use any additional packages that need to be installed!
+- Dataset outputs should be saved to the same directory containing the input data.
+- Print data samples and univariate summary statistics of new data or columns.
+- Only base python3.10 packages, along with: pandas, scipy, numpy, transformers, torch, datasets. Do not use any additional packages that need to be installed!
 """
 import os
 import pathlib

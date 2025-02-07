@@ -50,7 +50,7 @@ def run_aider(
         message_file (str): Message to send to aider.
         working_dir (str): The directory to run the command in.
     """
-    command_str = f"""aider --no-analytics --no-show-model-warnings --stream --model {model} --message-file {message_file} --yes --read {script_template} {script_path}"""
+    command_str = f"""aider --no-analytics --no-show-model-warnings --stream --model {model} --message-file {message_file} --yes --read templates/{script_template} {script_path}"""
     run_command(command_str, working_dir)
 
 
@@ -64,7 +64,7 @@ data_transform_script_template.py: Template for data transformation python scrip
 """
 
 AIDER_MESSAGE_TEMPLATE = """\
-Write a python script to complete a task. Follow any implementation patterns provided to you in read-only _template.py files.
+Write or revise a python script to complete a task. Follow any implementation patterns provided to you in read-only _template.py files.
 
 <task>
 {task}
@@ -88,6 +88,7 @@ def write_script(
     data_path: Annotated[str, Option(help="Dataset path")],
     task: Annotated[str, Option(help="Task (ignored if task_file is provided)")] = "",
     script_name: Annotated[str, Option(help="Script name (with .py extension)")] = None,
+    script_template: Annotated[str, Option(help="Script template name (with .py extension)")] = None,
     task_file: Annotated[str, Option(help="Optional yaml file containing parameters")] = None,
     model: Annotated[str, Option(help="A LiteLLM model identifier")] = DEFAULT_MODEL,
     verbose: Annotated[bool, Option(help="Stream output to stdout")] = False,
@@ -127,15 +128,16 @@ def write_script(
     assert script_name
 
     # Select the best script template
-    template_selection_module = PromptModule(
-        task=SCRIPT_TEMPLATE_SELECTION_TASK,
-        inputs=[Input("task", "A task")],
-        outputs=[Output("script_template", "Python script template. Must exactly match one of the python template file names.")],
-        model=model,
-        verbose=verbose
-    )
-    script_template = template_selection_module(task=task)["script_template"]
-    assert script_template
+    if not script_template:
+        template_selection_module = PromptModule(
+            task=SCRIPT_TEMPLATE_SELECTION_TASK,
+            inputs=[Input("task", "A task")],
+            outputs=[Output("script_template", "Python script template. Must exactly match one of the python template file names.")],
+            model=model,
+            verbose=verbose
+        )
+        script_template = template_selection_module(task=task)["script_template"]
+        assert script_template
 
     # Write the script
     message = AIDER_MESSAGE_TEMPLATE.format(
@@ -200,7 +202,7 @@ def write_script(
             last_git_hash = new_git_hash
             n_tries += 1
 
-    if script_template in("eda_script_template.py", "finetune_template.py"):
+    if script_template not in ("annotation_script_template.py",):
         summarize_script_output(
             repo_path=repo_path,
             data_path=data_path,
